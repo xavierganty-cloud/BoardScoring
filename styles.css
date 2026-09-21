@@ -78,9 +78,16 @@ h1,h2,h3,p { margin: 0; }
 }
 .hero-subtitle {
   max-width: 30ch;
-  margin: 16px auto 26px;
+  margin: 16px auto 12px;
   color: var(--muted);
   font-size: 1rem;
+}
+.version-note {
+  margin: 0 auto 22px;
+  color: #a79f99;
+  font-size: .72rem;
+  letter-spacing: .02em;
+  opacity: .92;
 }
 .hero-btn { max-width: 320px; margin: 0 auto; }
 .top-new-game-btn { white-space: nowrap; padding-inline: 14px; min-height: 46px; }
@@ -502,4 +509,79 @@ h1,h2,h3,p { margin: 0; }
   margin-top: 16px;
   background: #20262d;
   border-color: rgba(255,255,255,.12);
+}
+
+
+/* V7 visibility fixes for end-of-game modal */
+.dialog-card,
+.finish-card {
+  color: #f5f3f0;
+}
+.finish-heading h2,
+.finish-heading p,
+.time-card strong,
+.time-card span,
+.finish-section-title h3,
+.finish-section-title span,
+.finish-item strong,
+.finish-item small,
+.rank-score,
+.rank-name small,
+.rank-number {
+  color: #f5f3f0;
+}
+.finish-heading h2 {
+  color: #ffffff;
+  text-shadow: 0 2px 10px rgba(0,0,0,.28);
+}
+.finish-heading p {
+  color: #d7d0cb;
+}
+.time-card {
+  background: linear-gradient(180deg, #1c232b 0%, #141a20 100%);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.time-card span {
+  color: #d4cdc7;
+  font-weight: 650;
+}
+.time-card strong {
+  color: #ffffff;
+  font-size: 1.28rem;
+}
+.finish-section-title h3 {
+  color: #ffffff;
+  font-size: 1.22rem;
+  font-weight: 850;
+}
+.finish-section-title span {
+  color: #cfc7c2;
+  font-size: .92rem;
+  font-weight: 700;
+}
+.premium-ranking .finish-item {
+  background: linear-gradient(180deg, #192029 0%, #12181e 100%);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.045), 0 8px 20px rgba(0,0,0,.12);
+}
+.rank-number {
+  background: rgba(255,255,255,.09);
+  border-color: rgba(255,255,255,.12);
+  color: #ffffff;
+}
+.rank-name small {
+  color: #d0c8c2;
+}
+.rank-score {
+  color: #ffffff;
+  text-shadow: 0 1px 0 rgba(0,0,0,.35);
+}
+.finish-item small {
+  color: #d0c8c2;
+}
+.finish-dialog .secondary-btn {
+  background: linear-gradient(180deg, #222a33 0%, #1a2129 100%);
+  color: #ffffff;
+  border: 1px solid rgba(255,255,255,.14);
 }
