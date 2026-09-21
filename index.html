@@ -3,20 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#0f1012" />
+  <meta name="theme-color" content="#0d0f12" />
   <title>BoardScoring</title>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="icon" href="icon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="icon" href="logo.png" type="image/png" />
+  <link rel="apple-touch-icon" href="logo.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <main class="app-shell">
     <section class="welcome-screen" id="welcomeScreen">
       <div class="welcome-card card">
-        <img src="icon.svg" alt="Logo BoardScoring" class="welcome-logo" />
+        <img src="logo.png" alt="Logo BoardScoring" class="welcome-logo" />
         <h1 class="hero-title">BoardScoring</h1>
-        <p class="hero-subtitle">Le compteur de points sobre et pratique pour vos jeux de société.</p>
+        <p class="hero-subtitle">Un compteur de points pratique pour tous vos jeux</p>
         <button class="primary-btn hero-btn" id="launchSetupBtn">Lancer une partie</button>
       </div>
     </section>
@@ -24,7 +24,7 @@
     <section class="setup-screen hidden" id="setupScreen">
       <header class="topbar topbar-setup">
         <div class="brand brand-small">
-          <img src="icon.svg" alt="Logo BoardScoring" class="brand-icon" />
+          <img src="logo.png" alt="Logo BoardScoring" class="brand-icon" />
           <div class="brand-copy">
             <h1>BoardScoring</h1>
             <p class="subtitle">Prépare ta partie</p>
@@ -56,7 +56,7 @@
           </div>
         </section>
 
-        <p class="helper-text">Le minuteur démarre automatiquement au lancement de la partie et se met en pause pendant l’encodage d’un score.</p>
+        <p class="helper-text">Le minuteur démarre au lancement de la partie et se met en pause dès l’encodage des points.</p>
         <button class="primary-btn" id="startGameBtn">Commencer la partie</button>
       </section>
     </section>
@@ -64,13 +64,13 @@
     <section id="gamePanel" class="game-panel hidden">
       <header class="topbar">
         <div class="brand brand-small">
-          <img src="icon.svg" alt="Logo BoardScoring" class="brand-icon" />
+          <img src="logo.png" alt="Logo BoardScoring" class="brand-icon" />
           <div class="brand-copy">
             <h1>BoardScoring</h1>
             <p class="subtitle" id="gameSubtitle">Partie en cours</p>
           </div>
         </div>
-        <button class="icon-btn" id="newGameBtn" aria-label="Nouvelle partie" title="Nouvelle partie">↻</button>
+        <button class="small-btn top-new-game-btn" id="newGameBtn" aria-label="Nouvelle partie" title="Nouvelle partie">Nouvelle partie</button>
       </header>
 
       <section class="summary card">
@@ -88,7 +88,7 @@
         </div>
       </section>
 
-      <section class="score-wrap card">
+      <section class="score-wrap card app-ready-card">
         <div class="score-scroll" id="scoreScroll">
           <table class="score-table" id="scoreTable"></table>
         </div>

@@ -1,8 +1,11 @@
-const STORAGE_KEY = 'boardscoring-state-v3';
+const STORAGE_KEY = 'boardscoring-state-v4';
+const DEFAULT_PLAYER_COLORS = [
+  '#d74a42', '#3f7cff', '#35a167', '#f2a72f', '#9a5cff', '#ec6da6',
+  '#14a3a6', '#a96934', '#5ab0f5', '#95b82c', '#ff7d54', '#7d8b99'
+];
 
 const welcomeScreen = document.getElementById('welcomeScreen');
 const setupScreen = document.getElementById('setupScreen');
-const setupPanel = document.getElementById('setupPanel');
 const gamePanel = document.getElementById('gamePanel');
 const launchSetupBtn = document.getElementById('launchSetupBtn');
 const backHomeBtn = document.getElementById('backHomeBtn');
@@ -40,6 +43,7 @@ const toggleDetailsBtn = document.getElementById('toggleDetailsBtn');
 const detailsPanel = document.getElementById('detailsPanel');
 
 let setupPlayers = ['Joueur 1', 'Joueur 2'];
+let setupColors = DEFAULT_PLAYER_COLORS.slice(0, 2);
 let state = defaultState();
 let activeCell = null;
 let timerHandle = null;
@@ -50,6 +54,7 @@ function defaultState() {
     gameName: '',
     winnerMode: 'high',
     players: [],
+    playerColors: [],
     rounds: [],
     history: [],
     startedAt: null,
@@ -69,26 +74,19 @@ function createRound(playerCount) {
   };
 }
 
-function deepClone(value) {
-  return JSON.parse(JSON.stringify(value));
-}
-
-function saveState() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-}
+function deepClone(value) { return JSON.parse(JSON.stringify(value)); }
+function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 
 function showWelcome() {
   welcomeScreen.classList.remove('hidden');
   setupScreen.classList.add('hidden');
   gamePanel.classList.add('hidden');
 }
-
 function showSetup() {
   welcomeScreen.classList.add('hidden');
   setupScreen.classList.remove('hidden');
   gamePanel.classList.add('hidden');
 }
-
 function showGame() {
   welcomeScreen.classList.add('hidden');
   setupScreen.classList.add('hidden');
@@ -96,12 +94,24 @@ function showGame() {
   gameSubtitle.textContent = state.gameName;
 }
 
+function escapeHtml(str) {
+  return String(str).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
+}
+
+function hexToRgba(hex, alpha = 1) {
+  const safe = (hex || '#888888').replace('#', '');
+  const expanded = safe.length === 3 ? safe.split('').map(x => x + x).join('') : safe.padEnd(6, '0').slice(0, 6);
+  const int = parseInt(expanded, 16);
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function normalizeState() {
   if (!Array.isArray(state.rounds)) state.rounds = [];
   state.rounds = state.rounds.map(round => {
-    if (Array.isArray(round)) {
-      return { scores: round, completedAt: null, completedElapsedSec: null, durationSec: null };
-    }
+    if (Array.isArray(round)) return { scores: round, completedAt: null, completedElapsedSec: null, durationSec: null };
     return {
       scores: Array.isArray(round.scores) ? round.scores : Array(state.players.length).fill(null),
       completedAt: round.completedAt || null,
@@ -110,6 +120,9 @@ function normalizeState() {
     };
   });
   if (!state.rounds.length && state.players.length) state.rounds = [createRound(state.players.length)];
+  if (!Array.isArray(state.playerColors) || state.playerColors.length !== state.players.length) {
+    state.playerColors = state.players.map((_, i) => DEFAULT_PLAYER_COLORS[i % DEFAULT_PLAYER_COLORS.length]);
+  }
   if (typeof state.paused !== 'boolean') state.paused = false;
   if (!Number.isFinite(state.pausedTotalMs)) state.pausedTotalMs = 0;
 }
@@ -138,36 +151,37 @@ function renderSetupPlayers() {
     row.innerHTML = `
       <span class="player-index">${index + 1}</span>
       <input class="player-input" data-index="${index}" maxlength="24" value="${escapeHtml(name)}" aria-label="Nom du joueur ${index + 1}" />
+      <div class="player-color-wrap"><input class="player-color-input" type="color" value="${setupColors[index]}" data-color-index="${index}" aria-label="Couleur du joueur ${index + 1}" /></div>
       <button class="remove-player" data-remove="${index}" aria-label="Supprimer le joueur ${index + 1}">×</button>`;
     playersSetup.appendChild(row);
   });
   playerCount.textContent = `${setupPlayers.length} / 12`;
   addPlayerBtn.disabled = setupPlayers.length >= 12;
-  [...playersSetup.querySelectorAll('[data-remove]')].forEach(btn => {
-    btn.disabled = setupPlayers.length <= 2;
-  });
-}
-
-function escapeHtml(str) {
-  return String(str).replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
+  [...playersSetup.querySelectorAll('[data-remove]')].forEach(btn => btn.disabled = setupPlayers.length <= 2);
 }
 
 playersSetup.addEventListener('input', e => {
   if (e.target.matches('.player-input')) {
     setupPlayers[Number(e.target.dataset.index)] = e.target.value;
   }
+  if (e.target.matches('.player-color-input')) {
+    setupColors[Number(e.target.dataset.colorIndex)] = e.target.value;
+  }
 });
 
 playersSetup.addEventListener('click', e => {
   const btn = e.target.closest('[data-remove]');
   if (!btn || setupPlayers.length <= 2) return;
-  setupPlayers.splice(Number(btn.dataset.remove), 1);
+  const idx = Number(btn.dataset.remove);
+  setupPlayers.splice(idx, 1);
+  setupColors.splice(idx, 1);
   renderSetupPlayers();
 });
 
 addPlayerBtn.addEventListener('click', () => {
   if (setupPlayers.length >= 12) return;
   setupPlayers.push(`Joueur ${setupPlayers.length + 1}`);
+  setupColors.push(DEFAULT_PLAYER_COLORS[setupColors.length % DEFAULT_PLAYER_COLORS.length]);
   renderSetupPlayers();
   setTimeout(() => playersSetup.querySelector('.player-input:last-of-type')?.focus(), 0);
 });
@@ -177,12 +191,14 @@ backHomeBtn.addEventListener('click', showWelcome);
 
 startGameBtn.addEventListener('click', () => {
   const names = [...playersSetup.querySelectorAll('.player-input')].map((input, idx) => input.value.trim() || `Joueur ${idx + 1}`);
+  const colors = [...playersSetup.querySelectorAll('.player-color-input')].map((input, idx) => input.value || DEFAULT_PLAYER_COLORS[idx % DEFAULT_PLAYER_COLORS.length]);
   const winnerMode = document.querySelector('input[name="winnerMode"]:checked').value;
   state = {
     started: true,
     gameName: gameNameInput.value.trim() || 'Partie',
     winnerMode,
     players: names,
+    playerColors: colors,
     rounds: [createRound(names.length)],
     history: [],
     startedAt: Date.now(),
@@ -203,7 +219,8 @@ function pushHistory() {
     finishedAt: state.finishedAt,
     paused: state.paused,
     pausedAt: state.pausedAt,
-    pausedTotalMs: state.pausedTotalMs
+    pausedTotalMs: state.pausedTotalMs,
+    playerColors: state.playerColors
   }));
   if (state.history.length > 60) state.history.shift();
   undoBtn.disabled = state.history.length === 0;
@@ -212,7 +229,6 @@ function pushHistory() {
 function totals() {
   return state.players.map((_, playerIndex) => state.rounds.reduce((sum, round) => sum + (Number(round.scores[playerIndex]) || 0), 0));
 }
-
 function ranksFromTotals(ts) {
   const indexed = ts.map((value, index) => ({ value, index }));
   indexed.sort((a, b) => state.winnerMode === 'high' ? b.value - a.value : a.value - b.value);
@@ -226,11 +242,7 @@ function ranksFromTotals(ts) {
   });
   return ranks;
 }
-
-function rankLabel(rank) {
-  return rank === 1 ? '1er' : `${rank}e`;
-}
-
+function rankLabel(rank) { return rank === 1 ? '1er' : `${rank}e`; }
 function formatDuration(totalSeconds) {
   const sec = Math.max(0, Math.floor(Number(totalSeconds) || 0));
   const hours = Math.floor(sec / 3600);
@@ -238,29 +250,43 @@ function formatDuration(totalSeconds) {
   const seconds = sec % 60;
   return [hours, minutes, seconds].map(value => String(value).padStart(2, '0')).join(':');
 }
-
 function getElapsedMs() {
   if (!state.startedAt) return 0;
   const end = state.finishedAt || (state.paused ? state.pausedAt : Date.now());
   return Math.max(0, end - state.startedAt - (state.pausedTotalMs || 0));
 }
-
-function getElapsedSeconds() {
-  return Math.floor(getElapsedMs() / 1000);
+function getElapsedSeconds() { return Math.floor(getElapsedMs() / 1000); }
+function updateTimerText() { liveTimer.textContent = formatDuration(getElapsedSeconds()); }
+function getPreviousCompletedSec(roundIndex) {
+  for (let i = roundIndex - 1; i >= 0; i--) {
+    if (Number.isFinite(state.rounds[i].completedElapsedSec)) return state.rounds[i].completedElapsedSec;
+  }
+  return 0;
 }
-
-function updateTimerText() {
-  liveTimer.textContent = formatDuration(getElapsedSeconds());
+function getRoundDurationDisplay(roundIndex) {
+  const round = state.rounds[roundIndex];
+  if (Number.isFinite(round.durationSec)) return formatDuration(round.durationSec);
+  const elapsed = getElapsedSeconds();
+  const prev = getPreviousCompletedSec(roundIndex);
+  return formatDuration(Math.max(0, elapsed - prev));
 }
-
+function updateLiveRoundTimes() {
+  document.querySelectorAll('[data-round-time]').forEach(el => {
+    const index = Number(el.dataset.roundTime);
+    el.textContent = getRoundDurationDisplay(index);
+  });
+}
 function syncTimer() {
   if (timerHandle) clearInterval(timerHandle);
   updateTimerText();
+  updateLiveRoundTimes();
   if (state.started && !state.finishedAt && !state.paused) {
-    timerHandle = setInterval(updateTimerText, 1000);
+    timerHandle = setInterval(() => {
+      updateTimerText();
+      updateLiveRoundTimes();
+    }, 1000);
   }
 }
-
 function pauseTimer() {
   if (!state.started || state.finishedAt || state.paused) return;
   state.paused = true;
@@ -268,7 +294,6 @@ function pauseTimer() {
   saveState();
   syncTimer();
 }
-
 function resumeTimer() {
   if (!state.started || state.finishedAt || !state.paused) return;
   state.pausedTotalMs += Date.now() - state.pausedAt;
@@ -276,13 +301,6 @@ function resumeTimer() {
   state.pausedAt = null;
   saveState();
   syncTimer();
-}
-
-function getPreviousCompletedSec(roundIndex) {
-  for (let i = roundIndex - 1; i >= 0; i--) {
-    if (Number.isFinite(state.rounds[i].completedElapsedSec)) return state.rounds[i].completedElapsedSec;
-  }
-  return 0;
 }
 
 function updateRoundCompletion(roundIndex) {
@@ -300,11 +318,6 @@ function updateRoundCompletion(roundIndex) {
   round.durationSec = Math.max(0, elapsedSec - getPreviousCompletedSec(roundIndex));
 }
 
-function roundStatusText(round) {
-  if (Number.isFinite(round.durationSec)) return formatDuration(round.durationSec);
-  return 'en cours';
-}
-
 function renderGame() {
   if (!state.started) return;
   gameTitle.textContent = state.gameName || 'Partie';
@@ -315,18 +328,21 @@ function renderGame() {
 
   const ts = totals();
   const ranks = ranksFromTotals(ts);
-
   let html = '<thead><tr><th>Manche</th>';
   state.players.forEach((name, i) => {
-    html += `<th><div class="player-head"><span class="player-name">${escapeHtml(name)}</span><span class="player-total">${ts[i]} pts</span><span class="rank-badge">${rankLabel(ranks[i])}</span></div></th>`;
+    const color = state.playerColors[i] || DEFAULT_PLAYER_COLORS[i % DEFAULT_PLAYER_COLORS.length];
+    const soft = hexToRgba(color, .14);
+    html += `<th style="background:linear-gradient(180deg, ${soft}, rgba(18,21,25,.96)); box-shadow: inset 0 3px 0 ${color};"><div class="player-head"><span class="player-dot" style="background:${color}"></span><span class="player-name">${escapeHtml(name)}</span><span class="player-total" style="color:${color}">${ts[i]} pts</span><span class="rank-badge">${rankLabel(ranks[i])}</span></div></th>`;
   });
   html += '</tr></thead><tbody>';
 
   state.rounds.forEach((round, r) => {
-    html += `<tr><td class="round-label">M${r + 1}<span class="round-time">${roundStatusText(round)}</span></td>`;
+    html += `<tr><td class="round-label">${r + 1}<span class="round-time" data-round-time="${r}">${getRoundDurationDisplay(r)}</span></td>`;
     state.players.forEach((_, p) => {
       const val = round.scores[p];
-      html += `<td class="score-cell ${val === null ? 'empty-score' : ''}" data-r="${r}" data-p="${p}">${val === null ? '—' : val}</td>`;
+      const color = state.playerColors[p] || DEFAULT_PLAYER_COLORS[p % DEFAULT_PLAYER_COLORS.length];
+      const soft = hexToRgba(color, .08);
+      html += `<td class="score-cell ${val === null ? 'empty-score' : ''}" data-r="${r}" data-p="${p}" style="background:${soft};">${val === null ? '—' : val}</td>`;
     });
     html += '</tr>';
   });
@@ -370,13 +386,11 @@ function openScoreDialog() {
   pauseTimer();
   scoreDialog.showModal();
 }
-
 function setPreviewValue(value) {
   const normalized = Math.trunc(Number(value) || 0);
   scoreValueButton.textContent = normalized;
   manualScoreInput.value = normalized;
 }
-
 function commitActiveScore() {
   if (!activeCell) return;
   pushHistory();
@@ -394,7 +408,6 @@ scoreDialog.addEventListener('click', e => {
   const current = Number(scoreValueButton.textContent) || 0;
   setPreviewValue(current + delta);
 });
-
 scoreValueButton.addEventListener('click', () => {
   manualEntry.classList.toggle('hidden');
   if (!manualEntry.classList.contains('hidden')) {
@@ -402,28 +415,23 @@ scoreValueButton.addEventListener('click', () => {
     manualScoreInput.select();
   }
 });
-
 manualScoreInput.addEventListener('input', () => {
   if (manualScoreInput.value === '' || manualScoreInput.value === '-') return;
   setPreviewValue(manualScoreInput.value);
 });
-
 manualScoreInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     e.preventDefault();
     scoreForm.requestSubmit();
   }
 });
-
 closeDialogBtn.addEventListener('click', () => scoreDialog.close());
 scoreForm.addEventListener('submit', e => {
   e.preventDefault();
   commitActiveScore();
   scoreDialog.close();
 });
-scoreDialog.addEventListener('close', () => {
-  if (!state.finishedAt) resumeTimer();
-});
+scoreDialog.addEventListener('close', () => { if (!state.finishedAt) resumeTimer(); });
 
 undoBtn.addEventListener('click', () => {
   const previous = state.history.pop();
@@ -433,6 +441,7 @@ undoBtn.addEventListener('click', () => {
   state.paused = previous.paused || false;
   state.pausedAt = previous.pausedAt || null;
   state.pausedTotalMs = previous.pausedTotalMs || 0;
+  state.playerColors = previous.playerColors || state.playerColors;
   saveState();
   renderGame();
   syncTimer();
@@ -455,7 +464,12 @@ resetBtn.addEventListener('click', () => {
 function openFinishDialog() {
   const totalScores = totals();
   const ranks = ranksFromTotals(totalScores);
-  const players = state.players.map((name, index) => ({ name, score: totalScores[index], rank: ranks[index] }));
+  const players = state.players.map((name, index) => ({
+    name,
+    score: totalScores[index],
+    rank: ranks[index],
+    color: state.playerColors[index] || DEFAULT_PLAYER_COLORS[index % DEFAULT_PLAYER_COLORS.length]
+  }));
   players.sort((a, b) => a.rank - b.rank || (state.winnerMode === 'high' ? b.score - a.score : a.score - b.score));
 
   finishTotalTime.textContent = formatDuration(getElapsedSeconds());
@@ -465,15 +479,16 @@ function openFinishDialog() {
   players.forEach(item => {
     const row = document.createElement('div');
     row.className = 'finish-item';
-    row.innerHTML = `<div><strong>${escapeHtml(item.name)}</strong><small>${rankLabel(item.rank)}</small></div><strong>${item.score} pts</strong>`;
+    row.innerHTML = `<div><strong style="color:${item.color}">${escapeHtml(item.name)}</strong><small>${rankLabel(item.rank)}</small></div><strong>${item.score} pts</strong>`;
     finishScores.appendChild(row);
   });
 
   finishRounds.innerHTML = '';
   state.rounds.forEach((round, index) => {
+    const scoresText = round.scores.map((score, playerIdx) => `${state.players[playerIdx]}: ${score ?? '—'}`).join(' · ');
     const row = document.createElement('div');
     row.className = 'finish-item';
-    row.innerHTML = `<div><strong>Manche ${index + 1}</strong><small>${round.scores.map(score => score ?? '—').join(' · ')}</small></div><strong>${roundStatusText(round)}</strong>`;
+    row.innerHTML = `<div><strong>Manche ${index + 1}</strong><small>${escapeHtml(scoresText)}</small></div><strong>${getRoundDurationDisplay(index)}</strong>`;
     finishRounds.appendChild(row);
   });
 
@@ -503,9 +518,7 @@ finishGameBtn.addEventListener('click', () => {
 closeFinishDialogBtn.addEventListener('click', () => finishDialog.close());
 toggleDetailsBtn.addEventListener('click', () => {
   detailsPanel.classList.toggle('hidden');
-  toggleDetailsBtn.textContent = detailsPanel.classList.contains('hidden')
-    ? 'Voir les détails de la partie'
-    : 'Masquer les détails';
+  toggleDetailsBtn.textContent = detailsPanel.classList.contains('hidden') ? 'Voir les détails de la partie' : 'Masquer les détails';
 });
 finishDialog.addEventListener('click', e => {
   const rect = finishDialog.getBoundingClientRect();
@@ -513,20 +526,20 @@ finishDialog.addEventListener('click', e => {
   if (!clickedInDialog) finishDialog.close();
 });
 
-function resetToWelcome() {
+function resetToSetup() {
   localStorage.removeItem(STORAGE_KEY);
   state = defaultState();
   setupPlayers = ['Joueur 1', 'Joueur 2'];
+  setupColors = DEFAULT_PLAYER_COLORS.slice(0, 2);
   gameNameInput.value = '';
   document.querySelector('input[name="winnerMode"][value="high"]').checked = true;
   renderSetupPlayers();
   if (timerHandle) clearInterval(timerHandle);
-  showWelcome();
+  showSetup();
 }
-
 newGameBtn.addEventListener('click', () => {
   if (state.started && !confirm('Créer une nouvelle partie ? La partie actuelle sera remplacée.')) return;
-  resetToWelcome();
+  resetToSetup();
 });
 
 if ('serviceWorker' in navigator) {

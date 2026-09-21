@@ -1,30 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#1b1d21"/>
+      <stop offset="0" stop-color="#20252b"/>
       <stop offset="1" stop-color="#0f1012"/>
     </linearGradient>
-    <linearGradient id="meeple" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#e35f56"/>
-      <stop offset="1" stop-color="#b33b34"/>
+    <linearGradient id="meepleRed" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e25f56"/>
+      <stop offset="1" stop-color="#ba4038"/>
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#000000" flood-opacity="0.35"/>
+    <filter id="shadow" x="-20%" y="-20%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.38"/>
     </filter>
   </defs>
-  <rect width="512" height="512" rx="110" fill="url(#bg)"/>
-  <g filter="url(#shadow)">
-    <path d="M188 98c38 0 69 31 69 69 0 24-12 45-31 58l77 54-47 69-45-32v116h-69V316l-45 32-47-69 77-54c-19-13-31-34-31-58 0-38 31-69 69-69z" fill="url(#meeple)" stroke="#f8e7e6" stroke-width="14" stroke-linejoin="round"/>
-    <g transform="translate(240 235) rotate(-3)">
-      <rect x="0" y="0" width="154" height="154" rx="24" fill="#ffffff" stroke="#e7e1dc" stroke-width="10"/>
-      <g fill="#141518">
-        <circle cx="42" cy="42" r="10"/>
-        <circle cx="77" cy="42" r="10"/>
-        <circle cx="112" cy="42" r="10"/>
-        <circle cx="42" cy="77" r="10"/>
-        <circle cx="77" cy="77" r="10"/>
-        <circle cx="112" cy="77" r="10"/>
-      </g>
-    </g>
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <g filter="url(#shadow)" stroke="#101215" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+    <path fill="url(#meepleRed)" d="M173 103c18 0 32 15 32 33v18c0 9 5 18 13 22l34 18c10 6 13 20 6 30l-8 12c-6 10-19 13-29 8l-21-11c-8-4-18 2-18 11v37c0 17-13 30-30 30h-6c-17 0-30-13-30-30v-31c0-8-9-13-16-9l-24 14c-10 6-23 2-29-8l-8-12c-7-10-4-24 7-30l38-21c7-4 12-13 12-21v-17c0-18 15-33 33-33z"/>
+    <path fill="#ffffff" d="M281 170c16 0 28 13 28 28v15c0 8 4 15 11 19l29 16c9 5 11 17 6 25l-6 10c-5 8-16 11-25 7l-17-9c-7-4-15 1-15 9v32c0 15-12 27-27 27h-4c-15 0-27-12-27-27v-27c0-8-9-11-14-7l-20 11c-8 5-19 2-24-6l-7-10c-5-8-2-20 7-25l31-17c7-4 11-11 11-18v-15c0-15 12-28 28-28z" opacity="0.98"/>
   </g>
 </svg>

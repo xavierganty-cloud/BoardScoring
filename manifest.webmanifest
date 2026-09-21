@@ -4,14 +4,14 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0f1012",
-  "theme_color": "#0f1012",
+  "background_color": "#0d0f12",
+  "theme_color": "#0d0f12",
   "description": "Compteur de points sobre pour jeux de société.",
   "icons": [
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ]
