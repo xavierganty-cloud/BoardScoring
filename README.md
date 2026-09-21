@@ -1,25 +1,24 @@
-# BoardScoring
+# BoardScoring v2
 
-Petite PWA de comptage de points pour jeux de société.
+Petite PWA de comptage de points pour jeux de société, pensée pour un usage mobile.
 
 ## Fonctionnalités
 - 2 à 8 joueurs
 - manches illimitées
-- saisie rapide avec +1 / -1 / +5 / -5 / +10 / -10
-- saisie directe d'un score
-- totaux automatiques
-- classement score le plus haut ou le plus bas
-- annulation de la dernière modification
+- minuteur global démarré au lancement de la partie
+- temps affiché pour chaque manche validée
+- ajout des scores avec +1 / -1 / +5 / -5 / +10 / -10
+- saisie directe en touchant le score dans la fenêtre d’édition
+- modification possible d’un score passé en recliquant sur la case
+- bouton **Fin de partie** avec récapitulatif final
+- totaux automatiques et classement
+- annulation de la dernière action
 - sauvegarde locale automatique
 - fonctionnement hors ligne après la première ouverture
 
 ## Déploiement GitHub Pages
-1. Créer un dépôt GitHub, par exemple `BoardScoring`.
-2. Envoyer tous les fichiers de ce dossier à la racine du dépôt.
-3. Dans GitHub : Settings > Pages.
-4. Sous Build and deployment, choisir `Deploy from a branch`.
-5. Sélectionner la branche `main` et le dossier `/ (root)`.
-6. Cliquer Save.
-7. GitHub fournit ensuite l'adresse publique du site.
-
-Sur mobile, ouvrir l'adresse dans Safari/Chrome puis utiliser "Ajouter à l'écran d'accueil".
+1. Ouvrir le dépôt `BoardScoring`.
+2. Remplacer les anciens fichiers par ceux de cette version.
+3. Committer puis pousser sur `main`.
+4. GitHub Pages redéploiera automatiquement le site.
+5. Recharger l’adresse publique après 1 à 2 minutes.

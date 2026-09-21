@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#f7f7f3" />
+  <meta name="theme-color" content="#101315" />
   <title>BoardScoring</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
@@ -14,8 +14,8 @@
   <main class="app-shell">
     <header class="topbar">
       <div class="brand">
-        <img src="icon.svg" alt="" class="brand-icon" />
-        <div>
+        <img src="icon.svg" alt="Logo BoardScoring" class="brand-icon" />
+        <div class="brand-copy">
           <h1>BoardScoring</h1>
           <p class="subtitle" id="gameSubtitle">Nouvelle partie</p>
         </div>
@@ -26,7 +26,7 @@
     <section class="setup card" id="setupPanel">
       <h2>Créer une partie</h2>
       <label class="field-label" for="gameName">Nom du jeu <span>(facultatif)</span></label>
-      <input id="gameName" class="text-input" type="text" placeholder="Ex. Belote, 7 Wonders…" maxlength="40" />
+      <input id="gameName" class="text-input" type="text" placeholder="Ex. Belote, Uno, Skyjo…" maxlength="40" />
 
       <div class="section-row">
         <h3>Joueurs</h3>
@@ -41,6 +41,7 @@
         <label><input type="radio" name="winnerMode" value="low" /> Le score le plus faible gagne</label>
       </div>
 
+      <p class="helper-text">Le minuteur démarre automatiquement au lancement de la partie.</p>
       <button class="primary-btn" id="startGameBtn">Commencer la partie</button>
     </section>
 
@@ -49,9 +50,14 @@
         <div>
           <div class="eyebrow">Partie en cours</div>
           <h2 id="gameTitle">Partie</h2>
+          <div class="summary-meta">
+            <span class="meta-chip">⏱ <strong id="liveTimer">00:00:00</strong></span>
+            <span class="meta-chip">🎲 <strong id="roundCount">1 manche</strong></span>
+          </div>
         </div>
         <div class="summary-actions">
           <button class="small-btn" id="undoBtn" disabled>↶ Annuler</button>
+          <button class="small-btn" id="finishGameBtn">Fin de partie</button>
           <button class="small-btn danger-text" id="resetBtn">Réinitialiser</button>
         </div>
       </section>
@@ -80,6 +86,11 @@
         <button type="button" class="round-btn" data-delta="1">＋</button>
       </div>
 
+      <div id="manualEntry" class="manual-entry hidden">
+        <label class="visually-hidden" for="manualScoreInput">Entrer une valeur</label>
+        <input id="manualScoreInput" type="number" inputmode="numeric" step="1" />
+      </div>
+
       <div class="quick-grid">
         <button type="button" data-delta="-10">−10</button>
         <button type="button" data-delta="-5">−5</button>
@@ -87,14 +98,33 @@
         <button type="button" data-delta="10">＋10</button>
       </div>
 
-      <div id="manualEntry" class="manual-entry hidden">
-        <input id="manualScoreInput" type="number" inputmode="numeric" step="1" />
-        <button type="button" class="small-btn" id="applyManualBtn">Valider</button>
+      <button type="submit" class="primary-btn" id="validateScoreBtn">Valider</button>
+    </form>
+  </dialog>
+
+  <dialog id="finishDialog" class="score-dialog finish-dialog">
+    <div class="dialog-card">
+      <button type="button" class="close-btn" id="closeFinishDialogBtn" aria-label="Fermer">×</button>
+      <div class="dialog-heading finish-heading">
+        <h2>Fin de partie</h2>
+        <p>Résumé final</p>
       </div>
 
-      <button type="button" class="primary-btn" id="manualEntryBtn">Saisir une valeur</button>
-      <button type="submit" class="secondary-btn">Terminer</button>
-    </form>
+      <div class="finish-total card-mini">
+        <span>Temps total</span>
+        <strong id="finishTotalTime">00:00:00</strong>
+      </div>
+
+      <div class="finish-block">
+        <h3>Scores finaux</h3>
+        <div id="finishScores" class="finish-list"></div>
+      </div>
+
+      <div class="finish-block">
+        <h3>Temps par manche</h3>
+        <div id="finishRounds" class="finish-list"></div>
+      </div>
+    </div>
   </dialog>
 
   <script src="app.js" defer></script>

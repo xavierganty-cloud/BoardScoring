@@ -4,9 +4,9 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f7f7f3",
-  "theme_color": "#f7f7f3",
-  "description": "Compteur de points simple pour jeux de société.",
+  "background_color": "#101315",
+  "theme_color": "#101315",
+  "description": "Compteur de points sobre pour jeux de société.",
   "icons": [
     {
       "src": "icon.svg",
