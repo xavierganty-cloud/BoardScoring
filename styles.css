@@ -63,12 +63,11 @@ h1,h2,h3,p { margin: 0; }
   border: 1px solid rgba(255,255,255,.08);
 }
 .welcome-logo {
-  width: min(92vw, 680px);
-  max-height: 48dvh;
+  width: min(90%, 520px);
   height: auto;
+  margin: 0 auto 18px;
   object-fit: contain;
-  margin: 0 auto 8px;
-  filter: drop-shadow(0 16px 30px rgba(0,0,0,.34));
+  filter: drop-shadow(0 14px 26px rgba(0,0,0,.42));
 }
 .hero-title,
 .brand-copy h1 {
@@ -684,5 +683,41 @@ body {
   .top-new-game-btn {
     font-size: .78rem;
     padding-inline: 10px;
+  }
+}
+
+/* V14 horizontal logo integration */
+.brand-horizontal {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.brand-logo-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+.header-logo {
+  display: block;
+  width: min(58vw, 285px);
+  height: auto;
+  max-height: 58px;
+  object-fit: contain;
+  object-position: left center;
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,.28));
+}
+.brand-horizontal .subtitle {
+  margin-top: 4px;
+  padding-left: 3px;
+}
+@media (max-width: 420px) {
+  .header-logo {
+    width: min(55vw, 225px);
+    max-height: 48px;
+  }
+  .top-new-game-btn {
+    max-width: 39vw;
+    padding-inline: 11px;
+    font-size: .84rem;
   }
 }

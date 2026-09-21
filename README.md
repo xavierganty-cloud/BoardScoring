@@ -1,12 +1,9 @@
-# BoardScoring v13
+# BoardScoring v15
 
-## Modifications
-- slogan centré sur l'écran d'accueil
-- saut de ligne imposé après **"Un compteur de points pratique"**
-- version affichée : **Version 13 - by Xa!**
+## Modification
+- écran d'accueil : retour au logo vertical fourni par l'utilisateur
+- écrans Création de partie et Scores : conservation du logo horizontal
+- version affichée : **Version 15 - by Xa!**
 
 ## Mise à jour GitHub Pages
-1. Remplacer les anciens fichiers du dépôt par ceux-ci.
-2. Committer les changements.
-3. Faire un push sur `main`.
-4. Attendre 1 à 2 minutes puis recharger le site.
+Remplace les fichiers du dépôt par ceux de cette version, committe puis pousse sur `main`.
