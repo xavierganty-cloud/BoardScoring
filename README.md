@@ -1,9 +1,9 @@
-# BoardScoring v8
+# BoardScoring v10
 
 ## Modifications
-- ajout sur l'écran d'accueil de la mention **Version 8 - by Xa!**
-- permet d'identifier rapidement la version utilisée
-- conserve les améliorations de lisibilité de la v7
+- la mention **Version 10 - by Xa!** est maintenant placée **tout en bas de l'écran d'accueil**
+- permet de repérer la version sans gêner le bloc principal
+- conserve les améliorations de la v9
 
 ## Mise à jour GitHub Pages
 1. Remplacer les anciens fichiers du dépôt par ceux-ci.
