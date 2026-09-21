@@ -7,12 +7,10 @@
   "background_color": "#0d0f12",
   "theme_color": "#0d0f12",
   "description": "Compteur de points sobre pour jeux de société.",
-  "icons": [
-    {
-      "src": "app-icon.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ]
+  "icons": [{
+    "src": "app-icon.png",
+    "sizes": "512x512",
+    "type": "image/png",
+    "purpose": "any maskable"
+  }]
 }

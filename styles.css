@@ -57,15 +57,18 @@ h1,h2,h3,p { margin: 0; }
 }
 .welcome-card {
   width: 100%;
-  padding: 38px 24px;
+  padding: 22px 18px 28px;
   text-align: center;
+  background: linear-gradient(180deg, rgba(255,255,255,.045), rgba(255,255,255,.025));
+  border: 1px solid rgba(255,255,255,.08);
 }
 .welcome-logo {
-  width: min(94vw, 620px);
+  width: min(92vw, 680px);
+  max-height: 48dvh;
   height: auto;
-  margin: 0 auto 18px;
   object-fit: contain;
-  filter: drop-shadow(0 14px 24px rgba(0,0,0,.42));
+  margin: 0 auto 8px;
+  filter: drop-shadow(0 16px 30px rgba(0,0,0,.34));
 }
 .hero-title,
 .brand-copy h1 {
@@ -82,10 +85,13 @@ h1,h2,h3,p { margin: 0; }
   line-height: .95;
 }
 .hero-subtitle {
-  max-width: 30ch;
-  margin: 16px auto 12px;
-  color: var(--muted);
+  max-width: 32ch;
+  margin: 8px auto 22px;
+  color: #c9c1bc;
   font-size: 1rem;
+  line-height: 1.35;
+  text-align: center;
+  line-height: 1.35;
 }
 .version-note {
   color: #a79f99;
