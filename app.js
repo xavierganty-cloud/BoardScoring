@@ -1,7 +1,11 @@
-const STORAGE_KEY = 'boardscoring-state-v2';
+const STORAGE_KEY = 'boardscoring-state-v3';
 
+const welcomeScreen = document.getElementById('welcomeScreen');
+const setupScreen = document.getElementById('setupScreen');
 const setupPanel = document.getElementById('setupPanel');
 const gamePanel = document.getElementById('gamePanel');
+const launchSetupBtn = document.getElementById('launchSetupBtn');
+const backHomeBtn = document.getElementById('backHomeBtn');
 const playersSetup = document.getElementById('playersSetup');
 const playerCount = document.getElementById('playerCount');
 const addPlayerBtn = document.getElementById('addPlayerBtn');
@@ -29,8 +33,11 @@ const manualScoreInput = document.getElementById('manualScoreInput');
 const finishDialog = document.getElementById('finishDialog');
 const closeFinishDialogBtn = document.getElementById('closeFinishDialogBtn');
 const finishTotalTime = document.getElementById('finishTotalTime');
+const finishWinner = document.getElementById('finishWinner');
 const finishScores = document.getElementById('finishScores');
 const finishRounds = document.getElementById('finishRounds');
+const toggleDetailsBtn = document.getElementById('toggleDetailsBtn');
+const detailsPanel = document.getElementById('detailsPanel');
 
 let setupPlayers = ['Joueur 1', 'Joueur 2'];
 let state = defaultState();
@@ -46,7 +53,10 @@ function defaultState() {
     rounds: [],
     history: [],
     startedAt: null,
-    finishedAt: null
+    finishedAt: null,
+    paused: false,
+    pausedAt: null,
+    pausedTotalMs: 0
   };
 }
 
@@ -54,6 +64,7 @@ function createRound(playerCount) {
   return {
     scores: Array(playerCount).fill(null),
     completedAt: null,
+    completedElapsedSec: null,
     durationSec: null
   };
 }
@@ -66,15 +77,48 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
+function showWelcome() {
+  welcomeScreen.classList.remove('hidden');
+  setupScreen.classList.add('hidden');
+  gamePanel.classList.add('hidden');
+}
+
+function showSetup() {
+  welcomeScreen.classList.add('hidden');
+  setupScreen.classList.remove('hidden');
+  gamePanel.classList.add('hidden');
+}
+
+function showGame() {
+  welcomeScreen.classList.add('hidden');
+  setupScreen.classList.add('hidden');
+  gamePanel.classList.remove('hidden');
+  gameSubtitle.textContent = state.gameName;
+}
+
+function normalizeState() {
+  if (!Array.isArray(state.rounds)) state.rounds = [];
+  state.rounds = state.rounds.map(round => {
+    if (Array.isArray(round)) {
+      return { scores: round, completedAt: null, completedElapsedSec: null, durationSec: null };
+    }
+    return {
+      scores: Array.isArray(round.scores) ? round.scores : Array(state.players.length).fill(null),
+      completedAt: round.completedAt || null,
+      completedElapsedSec: Number.isFinite(round.completedElapsedSec) ? round.completedElapsedSec : null,
+      durationSec: Number.isFinite(round.durationSec) ? round.durationSec : null
+    };
+  });
+  if (!state.rounds.length && state.players.length) state.rounds = [createRound(state.players.length)];
+  if (typeof state.paused !== 'boolean') state.paused = false;
+  if (!Number.isFinite(state.pausedTotalMs)) state.pausedTotalMs = 0;
+}
+
 function loadState() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
     if (saved && saved.started && Array.isArray(saved.players)) {
-      state = {
-        ...defaultState(),
-        ...saved,
-        history: Array.isArray(saved.history) ? saved.history : []
-      };
+      state = { ...defaultState(), ...saved, history: Array.isArray(saved.history) ? saved.history : [] };
       normalizeState();
       showGame();
       renderGame();
@@ -83,23 +127,7 @@ function loadState() {
     }
   } catch (_) {}
   renderSetupPlayers();
-}
-
-function normalizeState() {
-  if (!Array.isArray(state.rounds)) state.rounds = [];
-  state.rounds = state.rounds.map(round => {
-    if (Array.isArray(round)) {
-      return { scores: round, completedAt: null, durationSec: null };
-    }
-    return {
-      scores: Array.isArray(round.scores) ? round.scores : Array(state.players.length).fill(null),
-      completedAt: round.completedAt || null,
-      durationSec: Number.isFinite(round.durationSec) ? round.durationSec : null
-    };
-  });
-  if (!state.rounds.length && state.players.length) {
-    state.rounds = [createRound(state.players.length)];
-  }
+  showWelcome();
 }
 
 function renderSetupPlayers() {
@@ -113,8 +141,8 @@ function renderSetupPlayers() {
       <button class="remove-player" data-remove="${index}" aria-label="Supprimer le joueur ${index + 1}">×</button>`;
     playersSetup.appendChild(row);
   });
-  playerCount.textContent = `${setupPlayers.length} / 8`;
-  addPlayerBtn.disabled = setupPlayers.length >= 8;
+  playerCount.textContent = `${setupPlayers.length} / 12`;
+  addPlayerBtn.disabled = setupPlayers.length >= 12;
   [...playersSetup.querySelectorAll('[data-remove]')].forEach(btn => {
     btn.disabled = setupPlayers.length <= 2;
   });
@@ -138,11 +166,14 @@ playersSetup.addEventListener('click', e => {
 });
 
 addPlayerBtn.addEventListener('click', () => {
-  if (setupPlayers.length >= 8) return;
+  if (setupPlayers.length >= 12) return;
   setupPlayers.push(`Joueur ${setupPlayers.length + 1}`);
   renderSetupPlayers();
   setTimeout(() => playersSetup.querySelector('.player-input:last-of-type')?.focus(), 0);
 });
+
+launchSetupBtn.addEventListener('click', showSetup);
+backHomeBtn.addEventListener('click', showWelcome);
 
 startGameBtn.addEventListener('click', () => {
   const names = [...playersSetup.querySelectorAll('.player-input')].map((input, idx) => input.value.trim() || `Joueur ${idx + 1}`);
@@ -155,7 +186,10 @@ startGameBtn.addEventListener('click', () => {
     rounds: [createRound(names.length)],
     history: [],
     startedAt: Date.now(),
-    finishedAt: null
+    finishedAt: null,
+    paused: false,
+    pausedAt: null,
+    pausedTotalMs: 0
   };
   saveState();
   showGame();
@@ -163,15 +197,15 @@ startGameBtn.addEventListener('click', () => {
   syncTimer();
 });
 
-function showGame() {
-  setupPanel.classList.add('hidden');
-  gamePanel.classList.remove('hidden');
-  gameSubtitle.textContent = state.gameName;
-}
-
 function pushHistory() {
-  state.history.push(deepClone({ rounds: state.rounds, finishedAt: state.finishedAt }));
-  if (state.history.length > 50) state.history.shift();
+  state.history.push(deepClone({
+    rounds: state.rounds,
+    finishedAt: state.finishedAt,
+    paused: state.paused,
+    pausedAt: state.pausedAt,
+    pausedTotalMs: state.pausedTotalMs
+  }));
+  if (state.history.length > 60) state.history.shift();
   undoBtn.disabled = state.history.length === 0;
 }
 
@@ -193,6 +227,10 @@ function ranksFromTotals(ts) {
   return ranks;
 }
 
+function rankLabel(rank) {
+  return rank === 1 ? '1er' : `${rank}e`;
+}
+
 function formatDuration(totalSeconds) {
   const sec = Math.max(0, Math.floor(Number(totalSeconds) || 0));
   const hours = Math.floor(sec / 3600);
@@ -201,10 +239,14 @@ function formatDuration(totalSeconds) {
   return [hours, minutes, seconds].map(value => String(value).padStart(2, '0')).join(':');
 }
 
-function getElapsedSeconds() {
+function getElapsedMs() {
   if (!state.startedAt) return 0;
-  const end = state.finishedAt || Date.now();
-  return Math.floor((end - state.startedAt) / 1000);
+  const end = state.finishedAt || (state.paused ? state.pausedAt : Date.now());
+  return Math.max(0, end - state.startedAt - (state.pausedTotalMs || 0));
+}
+
+function getElapsedSeconds() {
+  return Math.floor(getElapsedMs() / 1000);
 }
 
 function updateTimerText() {
@@ -214,26 +256,48 @@ function updateTimerText() {
 function syncTimer() {
   if (timerHandle) clearInterval(timerHandle);
   updateTimerText();
-  if (state.started && !state.finishedAt) {
+  if (state.started && !state.finishedAt && !state.paused) {
     timerHandle = setInterval(updateTimerText, 1000);
   }
 }
 
-function getPreviousCompletedAt(roundIndex) {
+function pauseTimer() {
+  if (!state.started || state.finishedAt || state.paused) return;
+  state.paused = true;
+  state.pausedAt = Date.now();
+  saveState();
+  syncTimer();
+}
+
+function resumeTimer() {
+  if (!state.started || state.finishedAt || !state.paused) return;
+  state.pausedTotalMs += Date.now() - state.pausedAt;
+  state.paused = false;
+  state.pausedAt = null;
+  saveState();
+  syncTimer();
+}
+
+function getPreviousCompletedSec(roundIndex) {
   for (let i = roundIndex - 1; i >= 0; i--) {
-    if (state.rounds[i].completedAt) return state.rounds[i].completedAt;
+    if (Number.isFinite(state.rounds[i].completedElapsedSec)) return state.rounds[i].completedElapsedSec;
   }
-  return state.startedAt || Date.now();
+  return 0;
 }
 
 function updateRoundCompletion(roundIndex) {
   const round = state.rounds[roundIndex];
   const isComplete = round.scores.every(score => score !== null && score !== undefined && score !== '');
-  if (isComplete && !round.completedAt) {
-    const now = Date.now();
-    round.completedAt = now;
-    round.durationSec = Math.max(0, Math.floor((now - getPreviousCompletedAt(roundIndex)) / 1000));
+  if (!isComplete) {
+    round.completedAt = null;
+    round.completedElapsedSec = null;
+    round.durationSec = null;
+    return;
   }
+  const elapsedSec = getElapsedSeconds();
+  round.completedAt = Date.now();
+  round.completedElapsedSec = elapsedSec;
+  round.durationSec = Math.max(0, elapsedSec - getPreviousCompletedSec(roundIndex));
 }
 
 function roundStatusText(round) {
@@ -248,7 +312,6 @@ function renderGame() {
   undoBtn.disabled = !state.history.length;
   updateTimerText();
   roundCount.textContent = `${state.rounds.length} ${state.rounds.length > 1 ? 'manches' : 'manche'}`;
-  finishGameBtn.textContent = state.finishedAt ? 'Voir le résumé' : 'Fin de partie';
 
   const ts = totals();
   const ranks = ranksFromTotals(ts);
@@ -271,14 +334,10 @@ function renderGame() {
   scoreTable.innerHTML = html;
 }
 
-function rankLabel(rank) {
-  return rank === 1 ? '1er' : `${rank}e`;
-}
-
 addRoundBtn.addEventListener('click', () => {
   const lastRound = state.rounds[state.rounds.length - 1];
   if (lastRound && lastRound.scores.some(score => score === null)) {
-    alert('Termine d’abord la manche en cours avant d’en ajouter une nouvelle.');
+    alert('Termine d’abord la manche en cours avant de passer à la suivante.');
     return;
   }
   pushHistory();
@@ -308,6 +367,7 @@ function openScoreDialog() {
   scoreValueButton.textContent = value;
   manualScoreInput.value = value;
   manualEntry.classList.add('hidden');
+  pauseTimer();
   scoreDialog.showModal();
 }
 
@@ -361,12 +421,18 @@ scoreForm.addEventListener('submit', e => {
   commitActiveScore();
   scoreDialog.close();
 });
+scoreDialog.addEventListener('close', () => {
+  if (!state.finishedAt) resumeTimer();
+});
 
 undoBtn.addEventListener('click', () => {
   const previous = state.history.pop();
   if (!previous) return;
   state.rounds = previous.rounds;
   state.finishedAt = previous.finishedAt || null;
+  state.paused = previous.paused || false;
+  state.pausedAt = previous.pausedAt || null;
+  state.pausedTotalMs = previous.pausedTotalMs || 0;
   saveState();
   renderGame();
   syncTimer();
@@ -378,6 +444,9 @@ resetBtn.addEventListener('click', () => {
   state.rounds = [createRound(state.players.length)];
   state.startedAt = Date.now();
   state.finishedAt = null;
+  state.paused = false;
+  state.pausedAt = null;
+  state.pausedTotalMs = 0;
   saveState();
   renderGame();
   syncTimer();
@@ -386,18 +455,19 @@ resetBtn.addEventListener('click', () => {
 function openFinishDialog() {
   const totalScores = totals();
   const ranks = ranksFromTotals(totalScores);
+  const players = state.players.map((name, index) => ({ name, score: totalScores[index], rank: ranks[index] }));
+  players.sort((a, b) => a.rank - b.rank || (state.winnerMode === 'high' ? b.score - a.score : a.score - b.score));
+
   finishTotalTime.textContent = formatDuration(getElapsedSeconds());
+  finishWinner.textContent = players[0] ? players[0].name : '—';
 
   finishScores.innerHTML = '';
-  state.players
-    .map((name, index) => ({ name, score: totalScores[index], rank: ranks[index] }))
-    .sort((a, b) => a.rank - b.rank || (state.winnerMode === 'high' ? b.score - a.score : a.score - b.score))
-    .forEach(item => {
-      const row = document.createElement('div');
-      row.className = 'finish-item';
-      row.innerHTML = `<div><strong>${escapeHtml(item.name)}</strong><small>${rankLabel(item.rank)}</small></div><strong>${item.score} pts</strong>`;
-      finishScores.appendChild(row);
-    });
+  players.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'finish-item';
+    row.innerHTML = `<div><strong>${escapeHtml(item.name)}</strong><small>${rankLabel(item.rank)}</small></div><strong>${item.score} pts</strong>`;
+    finishScores.appendChild(row);
+  });
 
   finishRounds.innerHTML = '';
   state.rounds.forEach((round, index) => {
@@ -407,6 +477,8 @@ function openFinishDialog() {
     finishRounds.appendChild(row);
   });
 
+  detailsPanel.classList.add('hidden');
+  toggleDetailsBtn.textContent = 'Voir les détails de la partie';
   finishDialog.showModal();
 }
 
@@ -415,6 +487,11 @@ finishGameBtn.addEventListener('click', () => {
     const answer = confirm('Clôturer la partie et afficher le résumé final ?');
     if (!answer) return;
     pushHistory();
+    if (state.paused) {
+      state.pausedTotalMs += Date.now() - state.pausedAt;
+      state.paused = false;
+      state.pausedAt = null;
+    }
     state.finishedAt = Date.now();
     saveState();
     renderGame();
@@ -424,24 +501,32 @@ finishGameBtn.addEventListener('click', () => {
 });
 
 closeFinishDialogBtn.addEventListener('click', () => finishDialog.close());
+toggleDetailsBtn.addEventListener('click', () => {
+  detailsPanel.classList.toggle('hidden');
+  toggleDetailsBtn.textContent = detailsPanel.classList.contains('hidden')
+    ? 'Voir les détails de la partie'
+    : 'Masquer les détails';
+});
 finishDialog.addEventListener('click', e => {
   const rect = finishDialog.getBoundingClientRect();
   const clickedInDialog = rect.top <= e.clientY && e.clientY <= rect.top + rect.height && rect.left <= e.clientX && e.clientX <= rect.left + rect.width;
   if (!clickedInDialog) finishDialog.close();
 });
 
-newGameBtn.addEventListener('click', () => {
-  if (state.started && !confirm('Créer une nouvelle partie ? La partie actuelle sera remplacée.')) return;
+function resetToWelcome() {
   localStorage.removeItem(STORAGE_KEY);
   state = defaultState();
   setupPlayers = ['Joueur 1', 'Joueur 2'];
   gameNameInput.value = '';
   document.querySelector('input[name="winnerMode"][value="high"]').checked = true;
   renderSetupPlayers();
-  gamePanel.classList.add('hidden');
-  setupPanel.classList.remove('hidden');
-  gameSubtitle.textContent = 'Nouvelle partie';
   if (timerHandle) clearInterval(timerHandle);
+  showWelcome();
+}
+
+newGameBtn.addEventListener('click', () => {
+  if (state.started && !confirm('Créer une nouvelle partie ? La partie actuelle sera remplacée.')) return;
+  resetToWelcome();
 });
 
 if ('serviceWorker' in navigator) {

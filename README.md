@@ -1,24 +1,21 @@
-# BoardScoring v2
+# BoardScoring v3
 
-Petite PWA de comptage de points pour jeux de société, pensée pour un usage mobile.
+Version sombre et plus aboutie de la PWA BoardScoring.
 
-## Fonctionnalités
-- 2 à 8 joueurs
-- manches illimitées
-- minuteur global démarré au lancement de la partie
-- temps affiché pour chaque manche validée
-- ajout des scores avec +1 / -1 / +5 / -5 / +10 / -10
-- saisie directe en touchant le score dans la fenêtre d’édition
-- modification possible d’un score passé en recliquant sur la case
-- bouton **Fin de partie** avec récapitulatif final
-- totaux automatiques et classement
-- annulation de la dernière action
-- sauvegarde locale automatique
-- fonctionnement hors ligne après la première ouverture
+## Nouveautés
+- écran d'accueil avec grand logo et bouton **Lancer une partie**
+- logo amélioré : meeple rouge + dé blanc à 6 points
+- titre avec effet visuel plus marqué
+- palette revue avec accents rouges
+- davantage de contraste entre le fond et les tableaux
+- jusqu’à 12 joueurs
+- minuteur mis en pause automatiquement pendant l’édition d’un score
+- boutons **Manche suivante** et **Fin de partie** empilés l’un sous l’autre
+- écran de fin de partie simplifié avec bouton **Voir les détails de la partie**
 
-## Déploiement GitHub Pages
-1. Ouvrir le dépôt `BoardScoring`.
-2. Remplacer les anciens fichiers par ceux de cette version.
-3. Committer puis pousser sur `main`.
-4. GitHub Pages redéploiera automatiquement le site.
-5. Recharger l’adresse publique après 1 à 2 minutes.
+## Mise à jour GitHub Pages
+1. Remplacer les anciens fichiers du dépôt par ceux-ci.
+2. Committer les changements.
+3. Faire un push sur `main`.
+4. Attendre 1 à 2 minutes puis recharger le site.
+5. Si besoin, supprimer/réajouter l’app sur l’écran d’accueil pour vider l’ancien cache.

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <meta name="theme-color" content="#101315" />
+  <meta name="theme-color" content="#0f1012" />
   <title>BoardScoring</title>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
@@ -12,40 +12,67 @@
 </head>
 <body>
   <main class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <img src="icon.svg" alt="Logo BoardScoring" class="brand-icon" />
-        <div class="brand-copy">
-          <h1>BoardScoring</h1>
-          <p class="subtitle" id="gameSubtitle">Nouvelle partie</p>
+    <section class="welcome-screen" id="welcomeScreen">
+      <div class="welcome-card card">
+        <img src="icon.svg" alt="Logo BoardScoring" class="welcome-logo" />
+        <h1 class="hero-title">BoardScoring</h1>
+        <p class="hero-subtitle">Le compteur de points sobre et pratique pour vos jeux de société.</p>
+        <button class="primary-btn hero-btn" id="launchSetupBtn">Lancer une partie</button>
+      </div>
+    </section>
+
+    <section class="setup-screen hidden" id="setupScreen">
+      <header class="topbar topbar-setup">
+        <div class="brand brand-small">
+          <img src="icon.svg" alt="Logo BoardScoring" class="brand-icon" />
+          <div class="brand-copy">
+            <h1>BoardScoring</h1>
+            <p class="subtitle">Prépare ta partie</p>
+          </div>
         </div>
-      </div>
-      <button class="icon-btn" id="newGameBtn" aria-label="Nouvelle partie" title="Nouvelle partie">↻</button>
-    </header>
+        <button class="icon-btn" id="backHomeBtn" aria-label="Retour accueil" title="Retour accueil">←</button>
+      </header>
 
-    <section class="setup card" id="setupPanel">
-      <h2>Créer une partie</h2>
-      <label class="field-label" for="gameName">Nom du jeu <span>(facultatif)</span></label>
-      <input id="gameName" class="text-input" type="text" placeholder="Ex. Belote, Uno, Skyjo…" maxlength="40" />
+      <section class="setup card" id="setupPanel">
+        <section class="setup-block">
+          <h2 class="setup-title">Nom du jeu</h2>
+          <input id="gameName" class="text-input" type="text" placeholder="Ex. Belote, Uno, Skyjo…" maxlength="40" />
+        </section>
 
-      <div class="section-row">
-        <h3>Joueurs</h3>
-        <span id="playerCount">2 / 8</span>
-      </div>
-      <div id="playersSetup" class="players-setup"></div>
-      <button class="secondary-btn" id="addPlayerBtn">＋ Ajouter un joueur</button>
+        <section class="setup-block">
+          <div class="section-row">
+            <h2 class="setup-title">Joueurs</h2>
+            <span id="playerCount">2 / 12</span>
+          </div>
+          <div id="playersSetup" class="players-setup"></div>
+          <button class="secondary-btn" id="addPlayerBtn">＋ Ajouter un joueur</button>
+        </section>
 
-      <div class="winner-mode">
-        <span class="field-label">Condition de victoire</span>
-        <label><input type="radio" name="winnerMode" value="high" checked /> Le score le plus élevé gagne</label>
-        <label><input type="radio" name="winnerMode" value="low" /> Le score le plus faible gagne</label>
-      </div>
+        <section class="setup-block">
+          <h2 class="setup-title">Condition de victoire</h2>
+          <div class="winner-mode">
+            <label><input type="radio" name="winnerMode" value="high" checked /> Le score le plus élevé gagne</label>
+            <label><input type="radio" name="winnerMode" value="low" /> Le score le plus faible gagne</label>
+          </div>
+        </section>
 
-      <p class="helper-text">Le minuteur démarre automatiquement au lancement de la partie.</p>
-      <button class="primary-btn" id="startGameBtn">Commencer la partie</button>
+        <p class="helper-text">Le minuteur démarre automatiquement au lancement de la partie et se met en pause pendant l’encodage d’un score.</p>
+        <button class="primary-btn" id="startGameBtn">Commencer la partie</button>
+      </section>
     </section>
 
     <section id="gamePanel" class="game-panel hidden">
+      <header class="topbar">
+        <div class="brand brand-small">
+          <img src="icon.svg" alt="Logo BoardScoring" class="brand-icon" />
+          <div class="brand-copy">
+            <h1>BoardScoring</h1>
+            <p class="subtitle" id="gameSubtitle">Partie en cours</p>
+          </div>
+        </div>
+        <button class="icon-btn" id="newGameBtn" aria-label="Nouvelle partie" title="Nouvelle partie">↻</button>
+      </header>
+
       <section class="summary card">
         <div>
           <div class="eyebrow">Partie en cours</div>
@@ -55,9 +82,8 @@
             <span class="meta-chip">🎲 <strong id="roundCount">1 manche</strong></span>
           </div>
         </div>
-        <div class="summary-actions">
+        <div class="summary-actions compact-actions">
           <button class="small-btn" id="undoBtn" disabled>↶ Annuler</button>
-          <button class="small-btn" id="finishGameBtn">Fin de partie</button>
           <button class="small-btn danger-text" id="resetBtn">Réinitialiser</button>
         </div>
       </section>
@@ -68,7 +94,10 @@
         </div>
       </section>
 
-      <button class="primary-btn sticky-add" id="addRoundBtn">＋ Ajouter une manche</button>
+      <div class="action-stack">
+        <button class="primary-btn" id="addRoundBtn">Manche suivante</button>
+        <button class="secondary-btn secondary-strong" id="finishGameBtn">Fin de partie</button>
+      </div>
     </section>
   </main>
 
@@ -103,16 +132,22 @@
   </dialog>
 
   <dialog id="finishDialog" class="score-dialog finish-dialog">
-    <div class="dialog-card">
+    <div class="dialog-card finish-card">
       <button type="button" class="close-btn" id="closeFinishDialogBtn" aria-label="Fermer">×</button>
       <div class="dialog-heading finish-heading">
         <h2>Fin de partie</h2>
         <p>Résumé final</p>
       </div>
 
-      <div class="finish-total card-mini">
-        <span>Temps total</span>
-        <strong id="finishTotalTime">00:00:00</strong>
+      <div class="finish-highlight">
+        <div>
+          <span>Temps total</span>
+          <strong id="finishTotalTime">00:00:00</strong>
+        </div>
+        <div>
+          <span>Gagnant</span>
+          <strong id="finishWinner">—</strong>
+        </div>
       </div>
 
       <div class="finish-block">
@@ -120,9 +155,13 @@
         <div id="finishScores" class="finish-list"></div>
       </div>
 
-      <div class="finish-block">
-        <h3>Temps par manche</h3>
-        <div id="finishRounds" class="finish-list"></div>
+      <button type="button" class="secondary-btn secondary-strong" id="toggleDetailsBtn">Voir les détails de la partie</button>
+
+      <div id="detailsPanel" class="details-panel hidden">
+        <div class="finish-block finish-block-tight">
+          <h3>Détails des manches</h3>
+          <div id="finishRounds" class="finish-list"></div>
+        </div>
       </div>
     </div>
   </dialog>
