@@ -1,10 +1,15 @@
-# BoardScoring v17
+# BoardScoring v18
 
-## Correction iPhone
-- icône d'écran d'accueil recréée au bon format carré
-- proportions du meeple et du dé conservées
-- ajout d'une icône Apple dédiée en 180×180
-- suppression du recadrage précédent qui déformait le logo
-- version affichée : **Version 17 - by Xa!**
+## Correction icône iPhone
+- l'icône iPhone a été entièrement refaite à partir du **meeple + dé uniquement**
+- suppression du recadrage horizontal qui donnait un effet **étiré vers le haut**
+- nouvelles icônes carrées `icon-192.png`, `icon-512.png` et `apple-touch-icon.png`
+- version affichée : **Version 18 - by Xa!**
 
-Après mise à jour, il faut supprimer l'ancienne icône BoardScoring de l'écran d'accueil de l'iPhone, puis l'ajouter à nouveau depuis Safari pour que la nouvelle icône soit prise en compte.
+## Important sur iPhone
+Après mise à jour, il faut :
+1. supprimer l'ancienne icône BoardScoring de l'écran d'accueil ;
+2. ouvrir le site dans Safari ;
+3. l'ajouter à nouveau à l'écran d'accueil.
+
+Sinon iOS continue souvent d'utiliser l'ancienne icône en cache.
