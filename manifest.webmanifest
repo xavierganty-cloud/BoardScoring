@@ -9,7 +9,7 @@
   "description": "Compteur de points sobre pour jeux de société.",
   "icons": [
     {
-      "src": "logo.png",
+      "src": "app-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

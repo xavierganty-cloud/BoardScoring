@@ -1,5 +1,5 @@
-const CACHE = 'boardscoring-v6';
-const ASSETS = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest', 'logo.png'];
+const CACHE = 'boardscoring-v11';
+const ASSETS = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest', 'logo.png', 'app-icon.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)));

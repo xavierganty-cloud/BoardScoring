@@ -61,9 +61,11 @@ h1,h2,h3,p { margin: 0; }
   text-align: center;
 }
 .welcome-logo {
-  width: min(52vw, 210px);
+  width: min(94vw, 620px);
+  height: auto;
   margin: 0 auto 18px;
-  filter: drop-shadow(0 12px 20px rgba(0,0,0,.35));
+  object-fit: contain;
+  filter: drop-shadow(0 14px 24px rgba(0,0,0,.42));
 }
 .hero-title,
 .brand-copy h1 {
