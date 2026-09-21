@@ -37,6 +37,7 @@ const finishDialog = document.getElementById('finishDialog');
 const closeFinishDialogBtn = document.getElementById('closeFinishDialogBtn');
 const finishTotalTime = document.getElementById('finishTotalTime');
 const finishWinner = document.getElementById('finishWinner');
+const finishWinnerScore = document.getElementById('finishWinnerScore');
 const finishScores = document.getElementById('finishScores');
 const finishRounds = document.getElementById('finishRounds');
 const toggleDetailsBtn = document.getElementById('toggleDetailsBtn');
@@ -106,6 +107,22 @@ function hexToRgba(hex, alpha = 1) {
   const g = (int >> 8) & 255;
   const b = int & 255;
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function readableAccent(hex) {
+  const safe = (hex || '#888888').replace('#', '');
+  const expanded = safe.length === 3 ? safe.split('').map(x => x + x).join('') : safe.padEnd(6, '0').slice(0, 6);
+  const int = parseInt(expanded, 16);
+  let r = (int >> 16) & 255;
+  let g = (int >> 8) & 255;
+  let b = int & 255;
+  const luminance = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  if (luminance >= 0.42) return `rgb(${r}, ${g}, ${b})`;
+  const mix = luminance < 0.12 ? 0.72 : 0.52;
+  r = Math.round(r + (255 - r) * mix);
+  g = Math.round(g + (255 - g) * mix);
+  b = Math.round(b + (255 - b) * mix);
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 function normalizeState() {
@@ -331,8 +348,9 @@ function renderGame() {
   let html = '<thead><tr><th>Manche</th>';
   state.players.forEach((name, i) => {
     const color = state.playerColors[i] || DEFAULT_PLAYER_COLORS[i % DEFAULT_PLAYER_COLORS.length];
-    const soft = hexToRgba(color, .14);
-    html += `<th style="background:linear-gradient(180deg, ${soft}, rgba(18,21,25,.96)); box-shadow: inset 0 3px 0 ${color};"><div class="player-head"><span class="player-dot" style="background:${color}"></span><span class="player-name">${escapeHtml(name)}</span><span class="player-total" style="color:${color}">${ts[i]} pts</span><span class="rank-badge">${rankLabel(ranks[i])}</span></div></th>`;
+    const readable = readableAccent(color);
+    const soft = hexToRgba(color, .16);
+    html += `<th style="background:linear-gradient(180deg, ${soft}, rgba(28,33,39,.98)); box-shadow: inset 0 4px 0 ${color};"><div class="player-head"><span class="player-dot" style="background:${color}"></span><span class="player-name">${escapeHtml(name)}</span><span class="player-total" style="color:${readable}">${ts[i]} pts</span><span class="rank-badge">${rankLabel(ranks[i])}</span></div></th>`;
   });
   html += '</tr></thead><tbody>';
 
@@ -341,8 +359,8 @@ function renderGame() {
     state.players.forEach((_, p) => {
       const val = round.scores[p];
       const color = state.playerColors[p] || DEFAULT_PLAYER_COLORS[p % DEFAULT_PLAYER_COLORS.length];
-      const soft = hexToRgba(color, .08);
-      html += `<td class="score-cell ${val === null ? 'empty-score' : ''}" data-r="${r}" data-p="${p}" style="background:${soft};">${val === null ? '—' : val}</td>`;
+      const soft = hexToRgba(color, .13);
+      html += `<td class="score-cell ${val === null ? 'empty-score' : ''}" data-r="${r}" data-p="${p}" style="--cell-soft:${soft};"><span>${val === null ? '—' : val}</span></td>`;
     });
     html += '</tr>';
   });
@@ -474,12 +492,16 @@ function openFinishDialog() {
 
   finishTotalTime.textContent = formatDuration(getElapsedSeconds());
   finishWinner.textContent = players[0] ? players[0].name : '—';
+  finishWinnerScore.textContent = players[0] ? `${players[0].score} pts` : '— pts';
+  if (players[0]) finishWinner.style.color = readableAccent(players[0].color);
 
   finishScores.innerHTML = '';
   players.forEach(item => {
     const row = document.createElement('div');
     row.className = 'finish-item';
-    row.innerHTML = `<div><strong style="color:${item.color}">${escapeHtml(item.name)}</strong><small>${rankLabel(item.rank)}</small></div><strong>${item.score} pts</strong>`;
+    row.style.setProperty('--rank-color', item.color);
+    const readable = readableAccent(item.color);
+    row.innerHTML = `<div class="rank-left"><span class="rank-number">${item.rank}</span><div class="rank-name"><strong style="color:${readable}">${escapeHtml(item.name)}</strong><small>${rankLabel(item.rank)}</small></div></div><span class="rank-score">${item.score} pts</span>`;
     finishScores.appendChild(row);
   });
 

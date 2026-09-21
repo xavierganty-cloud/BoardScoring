@@ -1,4 +1,4 @@
-const CACHE = 'boardscoring-v5';
+const CACHE = 'boardscoring-v6';
 const ASSETS = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest', 'logo.png'];
 
 self.addEventListener('install', event => {

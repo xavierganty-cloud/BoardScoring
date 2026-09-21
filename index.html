@@ -139,20 +139,23 @@
         <p>Résumé final</p>
       </div>
 
-      <div class="finish-highlight">
-        <div>
-          <span>Temps total</span>
-          <strong id="finishTotalTime">00:00:00</strong>
-        </div>
-        <div>
-          <span>Gagnant</span>
-          <strong id="finishWinner">—</strong>
-        </div>
+      <div class="winner-card">
+        <span class="winner-label">Gagnant</span>
+        <strong id="finishWinner">—</strong>
+        <span id="finishWinnerScore" class="winner-score">— pts</span>
+      </div>
+
+      <div class="time-card">
+        <span>Temps total</span>
+        <strong id="finishTotalTime">00:00:00</strong>
       </div>
 
       <div class="finish-block">
-        <h3>Scores finaux</h3>
-        <div id="finishScores" class="finish-list"></div>
+        <div class="finish-section-title">
+          <h3>Classement</h3>
+          <span>Scores finaux</span>
+        </div>
+        <div id="finishScores" class="finish-list premium-ranking"></div>
       </div>
 
       <button type="button" class="secondary-btn secondary-strong" id="toggleDetailsBtn">Voir les détails de la partie</button>

@@ -310,3 +310,196 @@ h1,h2,h3,p { margin: 0; }
   .welcome-card, .setup { padding: 30px; }
   .score-table th,.score-table td { min-width: 154px; }
 }
+
+
+/* V6 premium score and result styling */
+.score-table th,.score-table td {
+  border-right: 1px solid rgba(255,255,255,.12);
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+.score-table th {
+  background: #343c47;
+}
+.score-table th:first-child,.score-table td:first-child {
+  background: #2b323b;
+}
+.player-head {
+  padding: 4px 0;
+}
+.player-name {
+  font-size: .96rem;
+  letter-spacing: -.015em;
+}
+.player-total {
+  font-size: 1.48rem;
+  line-height: 1.05;
+  text-shadow: 0 1px 0 rgba(0,0,0,.45), 0 0 12px rgba(255,255,255,.05);
+}
+.score-cell {
+  position: relative;
+  background: #161b21 !important;
+}
+.score-cell::before {
+  content: '';
+  position: absolute;
+  inset: 7px;
+  border-radius: 14px;
+  background: var(--cell-soft, rgba(255,255,255,.035));
+  border: 1px solid rgba(255,255,255,.04);
+  pointer-events: none;
+}
+.score-cell > span {
+  position: relative;
+  z-index: 1;
+}
+.round-label {
+  font-size: 1.1rem;
+}
+.round-time {
+  color: #c1b9b4;
+  font-size: .7rem;
+  letter-spacing: .02em;
+}
+
+.finish-card {
+  background: linear-gradient(180deg, #252b33 0%, #1c2127 100%);
+}
+.finish-heading h2 {
+  font-size: 1.55rem;
+  letter-spacing: -.035em;
+}
+.winner-card {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 20px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(215,74,66,.22), rgba(215,74,66,.08));
+  border: 1px solid rgba(240,100,92,.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+.winner-card::after {
+  content: '★';
+  position: absolute;
+  right: 18px;
+  top: 14px;
+  font-size: 2.3rem;
+  color: rgba(255,255,255,.08);
+}
+.winner-label {
+  display: block;
+  color: #f6b4af;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-size: .76rem;
+  margin-bottom: 7px;
+}
+.winner-card strong {
+  display: block;
+  font-size: 1.85rem;
+  line-height: 1.05;
+  letter-spacing: -.04em;
+}
+.winner-score {
+  display: block;
+  color: var(--muted);
+  margin-top: 6px;
+  font-weight: 700;
+}
+.time-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: #171c22;
+  border: 1px solid rgba(255,255,255,.10);
+}
+.time-card span {
+  color: var(--muted);
+  font-size: .88rem;
+}
+.time-card strong {
+  font-size: 1.16rem;
+  letter-spacing: .03em;
+}
+.finish-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.finish-section-title h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+.finish-section-title span {
+  color: var(--muted);
+  font-size: .8rem;
+}
+.premium-ranking {
+  gap: 10px;
+}
+.premium-ranking .finish-item {
+  position: relative;
+  overflow: hidden;
+  padding: 14px 16px 14px 18px;
+  min-height: 68px;
+  background: #161b21;
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.premium-ranking .finish-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--rank-color, #d74a42);
+}
+.rank-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.rank-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 34px;
+  font-weight: 900;
+  color: #fff;
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.rank-name {
+  min-width: 0;
+}
+.rank-name strong {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 1.02rem;
+}
+.rank-name small {
+  color: var(--muted);
+}
+.rank-score {
+  flex: 0 0 auto;
+  font-size: 1.18rem;
+  font-weight: 900;
+  color: #fff;
+}
+.finish-dialog .secondary-btn {
+  margin-top: 16px;
+  background: #20262d;
+  border-color: rgba(255,255,255,.12);
+}
