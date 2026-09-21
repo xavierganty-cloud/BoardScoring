@@ -92,7 +92,7 @@ function showGame() {
   welcomeScreen.classList.add('hidden');
   setupScreen.classList.add('hidden');
   gamePanel.classList.remove('hidden');
-  gameSubtitle.textContent = state.gameName;
+  if (gameSubtitle) gameSubtitle.textContent = state.gameName;
 }
 
 function escapeHtml(str) {
@@ -338,7 +338,7 @@ function updateRoundCompletion(roundIndex) {
 function renderGame() {
   if (!state.started) return;
   gameTitle.textContent = state.gameName || 'Partie';
-  gameSubtitle.textContent = state.gameName || 'Partie';
+  if (gameSubtitle) gameSubtitle.textContent = state.gameName || 'Partie';
   undoBtn.disabled = !state.history.length;
   updateTimerText();
   roundCount.textContent = `${state.rounds.length} ${state.rounds.length > 1 ? 'manches' : 'manche'}`;

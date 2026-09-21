@@ -1,9 +1,7 @@
-# BoardScoring v15
+# BoardScoring v16
 
-## Modification
-- écran d'accueil : retour au logo vertical fourni par l'utilisateur
-- écrans Création de partie et Scores : conservation du logo horizontal
-- version affichée : **Version 15 - by Xa!**
-
-## Mise à jour GitHub Pages
-Remplace les fichiers du dépôt par ceux de cette version, committe puis pousse sur `main`.
+## Modifications
+- écran de préparation : suppression de **Prépare ta partie** sous le logo
+- écran des scores : suppression du nom du jeu sous le logo
+- le nom du jeu reste affiché dans le bloc **Partie en cours**
+- version affichée : **Version 16 - by Xa!**
