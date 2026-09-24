@@ -1,4 +1,5 @@
-const STORAGE_KEY = 'boardscoring-state-v4';
+const STORAGE_KEY = 'boardscoring-state-v19';
+const STATS_KEY = 'boardscoring-saved-stats-v1';
 const DEFAULT_PLAYER_COLORS = [
   '#d74a42', '#3f7cff', '#35a167', '#f2a72f', '#9a5cff', '#ec6da6',
   '#14a3a6', '#a96934', '#5ab0f5', '#95b82c', '#ff7d54', '#7d8b99'
@@ -24,6 +25,9 @@ const undoBtn = document.getElementById('undoBtn');
 const resetBtn = document.getElementById('resetBtn');
 const newGameBtn = document.getElementById('newGameBtn');
 const finishGameBtn = document.getElementById('finishGameBtn');
+const roundModeToggle = document.getElementById('roundModeToggle');
+const scoreWrap = document.querySelector('.score-wrap');
+const freeScorePanel = document.getElementById('freeScorePanel');
 
 const scoreDialog = document.getElementById('scoreDialog');
 const scoreForm = document.getElementById('scoreForm');
@@ -42,9 +46,12 @@ const finishScores = document.getElementById('finishScores');
 const finishRounds = document.getElementById('finishRounds');
 const toggleDetailsBtn = document.getElementById('toggleDetailsBtn');
 const detailsPanel = document.getElementById('detailsPanel');
+const saveStatsBtn = document.getElementById('saveStatsBtn');
+const saveStatsStatus = document.getElementById('saveStatsStatus');
 
-let setupPlayers = ['Joueur 1', 'Joueur 2'];
+let setupPlayers = ['', ''];
 let setupColors = DEFAULT_PLAYER_COLORS.slice(0, 2);
+let setupFirstPlayerIndex = 0;
 let state = defaultState();
 let activeCell = null;
 let timerHandle = null;
@@ -62,7 +69,11 @@ function defaultState() {
     finishedAt: null,
     paused: false,
     pausedAt: null,
-    pausedTotalMs: 0
+    pausedTotalMs: 0,
+    firstPlayerIndex: 0,
+    scoringMode: 'rounds',
+    freeTotals: [],
+    freeActions: []
   };
 }
 
@@ -142,6 +153,10 @@ function normalizeState() {
   }
   if (typeof state.paused !== 'boolean') state.paused = false;
   if (!Number.isFinite(state.pausedTotalMs)) state.pausedTotalMs = 0;
+  if (!Number.isFinite(state.firstPlayerIndex)) state.firstPlayerIndex = 0;
+  if (!['rounds','free'].includes(state.scoringMode)) state.scoringMode = 'rounds';
+  if (!Array.isArray(state.freeTotals) || state.freeTotals.length !== state.players.length) state.freeTotals = Array(state.players.length).fill(0);
+  if (!Array.isArray(state.freeActions)) state.freeActions = [];
 }
 
 function loadState() {
@@ -167,8 +182,9 @@ function renderSetupPlayers() {
     row.className = 'player-row';
     row.innerHTML = `
       <span class="player-index">${index + 1}</span>
-      <input class="player-input" data-index="${index}" maxlength="24" value="${escapeHtml(name)}" aria-label="Nom du joueur ${index + 1}" />
+      <input class="player-input" data-index="${index}" maxlength="24" value="${escapeHtml(name)}" placeholder="Joueur ${index + 1}" aria-label="Nom du joueur ${index + 1}" />
       <div class="player-color-wrap"><input class="player-color-input" type="color" value="${setupColors[index]}" data-color-index="${index}" aria-label="Couleur du joueur ${index + 1}" /></div>
+      <button type="button" class="first-player-btn ${setupFirstPlayerIndex === index ? 'active' : ''}" data-first="${index}" aria-label="Désigner joueur ${index + 1} comme premier joueur">1er</button>
       <button class="remove-player" data-remove="${index}" aria-label="Supprimer le joueur ${index + 1}">×</button>`;
     playersSetup.appendChild(row);
   });
@@ -177,7 +193,7 @@ function renderSetupPlayers() {
   [...playersSetup.querySelectorAll('[data-remove]')].forEach(btn => btn.disabled = setupPlayers.length <= 2);
 }
 
-playersSetup.addEventListener('input', e => {
+playersSetup.addEventListener('input' , e => {
   if (e.target.matches('.player-input')) {
     setupPlayers[Number(e.target.dataset.index)] = e.target.value;
   }
@@ -187,17 +203,25 @@ playersSetup.addEventListener('input', e => {
 });
 
 playersSetup.addEventListener('click', e => {
+  const firstBtn = e.target.closest('[data-first]');
+  if (firstBtn) {
+    setupFirstPlayerIndex = Number(firstBtn.dataset.first);
+    renderSetupPlayers();
+    return;
+  }
   const btn = e.target.closest('[data-remove]');
   if (!btn || setupPlayers.length <= 2) return;
   const idx = Number(btn.dataset.remove);
   setupPlayers.splice(idx, 1);
   setupColors.splice(idx, 1);
+  if (setupFirstPlayerIndex === idx) setupFirstPlayerIndex = 0;
+  else if (setupFirstPlayerIndex > idx) setupFirstPlayerIndex -= 1;
   renderSetupPlayers();
 });
 
 addPlayerBtn.addEventListener('click', () => {
   if (setupPlayers.length >= 12) return;
-  setupPlayers.push(`Joueur ${setupPlayers.length + 1}`);
+  setupPlayers.push('');
   setupColors.push(DEFAULT_PLAYER_COLORS[setupColors.length % DEFAULT_PLAYER_COLORS.length]);
   renderSetupPlayers();
   setTimeout(() => playersSetup.querySelector('.player-input:last-of-type')?.focus(), 0);
@@ -207,8 +231,12 @@ launchSetupBtn.addEventListener('click', showSetup);
 backHomeBtn.addEventListener('click', showWelcome);
 
 startGameBtn.addEventListener('click', () => {
-  const names = [...playersSetup.querySelectorAll('.player-input')].map((input, idx) => input.value.trim() || `Joueur ${idx + 1}`);
-  const colors = [...playersSetup.querySelectorAll('.player-color-input')].map((input, idx) => input.value || DEFAULT_PLAYER_COLORS[idx % DEFAULT_PLAYER_COLORS.length]);
+  const rawNames = [...playersSetup.querySelectorAll('.player-input')].map((input, idx) => input.value.trim() || `Joueur ${idx + 1}`);
+  const rawColors = [...playersSetup.querySelectorAll('.player-color-input')].map((input, idx) => input.value || DEFAULT_PLAYER_COLORS[idx % DEFAULT_PLAYER_COLORS.length]);
+  const first = Math.min(Math.max(setupFirstPlayerIndex, 0), rawNames.length - 1);
+  const order = [...Array(rawNames.length).keys()].slice(first).concat([...Array(rawNames.length).keys()].slice(0, first));
+  const names = order.map(i => rawNames[i]);
+  const colors = order.map(i => rawColors[i]);
   const winnerMode = document.querySelector('input[name="winnerMode"]:checked').value;
   state = {
     started: true,
@@ -222,7 +250,11 @@ startGameBtn.addEventListener('click', () => {
     finishedAt: null,
     paused: false,
     pausedAt: null,
-    pausedTotalMs: 0
+    pausedTotalMs: 0,
+    firstPlayerIndex: 0,
+    scoringMode: 'rounds',
+    freeTotals: Array(names.length).fill(0),
+    freeActions: []
   };
   saveState();
   showGame();
@@ -237,14 +269,20 @@ function pushHistory() {
     paused: state.paused,
     pausedAt: state.pausedAt,
     pausedTotalMs: state.pausedTotalMs,
-    playerColors: state.playerColors
+    playerColors: state.playerColors,
+    scoringMode: state.scoringMode,
+    freeTotals: state.freeTotals,
+    freeActions: state.freeActions
   }));
   if (state.history.length > 60) state.history.shift();
   undoBtn.disabled = state.history.length === 0;
 }
 
 function totals() {
-  return state.players.map((_, playerIndex) => state.rounds.reduce((sum, round) => sum + (Number(round.scores[playerIndex]) || 0), 0));
+  return state.players.map((_, playerIndex) => {
+    const roundTotal = state.rounds.reduce((sum, round) => sum + (Number(round.scores[playerIndex]) || 0), 0);
+    return roundTotal + (Number(state.freeTotals[playerIndex]) || 0);
+  });
 }
 function ranksFromTotals(ts) {
   const indexed = ts.map((value, index) => ({ value, index }));
@@ -341,7 +379,11 @@ function renderGame() {
   if (gameSubtitle) gameSubtitle.textContent = state.gameName || 'Partie';
   undoBtn.disabled = !state.history.length;
   updateTimerText();
-  roundCount.textContent = `${state.rounds.length} ${state.rounds.length > 1 ? 'manches' : 'manche'}`;
+  roundCount.textContent = state.scoringMode === 'rounds' ? `Manche ${state.rounds.length} en cours` : 'Mode libre';
+  roundModeToggle.checked = state.scoringMode === 'rounds';
+  scoreWrap.classList.toggle('hidden', state.scoringMode !== 'rounds');
+  addRoundBtn.classList.toggle('hidden', state.scoringMode !== 'rounds');
+  freeScorePanel.classList.toggle('hidden', state.scoringMode === 'rounds');
 
   const ts = totals();
   const ranks = ranksFromTotals(ts);
@@ -350,7 +392,7 @@ function renderGame() {
     const color = state.playerColors[i] || DEFAULT_PLAYER_COLORS[i % DEFAULT_PLAYER_COLORS.length];
     const readable = readableAccent(color);
     const soft = hexToRgba(color, .16);
-    html += `<th style="background:linear-gradient(180deg, ${soft}, rgba(28,33,39,.98)); box-shadow: inset 0 4px 0 ${color};"><div class="player-head"><span class="player-dot" style="background:${color}"></span><span class="player-name">${escapeHtml(name)}</span><span class="player-total" style="color:${readable}">${ts[i]} pts</span><span class="rank-badge">${rankLabel(ranks[i])}</span></div></th>`;
+    html += `<th style="background:linear-gradient(180deg, ${soft}, rgba(28,33,39,.98)); box-shadow: inset 0 4px 0 ${color};"><div class="player-head"><span class="player-dot" style="background:${color}"></span><span class="player-name">${escapeHtml(name)}</span>${i === 0 ? '<span class="first-player-chip">1er joueur</span>' : ''}<span class="player-total" style="color:${readable}">${ts[i]} pts</span><span class="rank-badge">${rankLabel(ranks[i])}</span></div></th>`;
   });
   html += '</tr></thead><tbody>';
 
@@ -366,6 +408,15 @@ function renderGame() {
   });
   html += '</tbody>';
   scoreTable.innerHTML = html;
+
+  if (state.scoringMode === 'free') {
+    const freeTotals = totals();
+    freeScorePanel.innerHTML = state.players.map((name, i) => {
+      const color = state.playerColors[i] || DEFAULT_PLAYER_COLORS[i % DEFAULT_PLAYER_COLORS.length];
+      const readable = readableAccent(color);
+      return `<div class="free-player-card" style="--player-color:${color};--player-readable:${readable}"><span class="free-player-dot"></span><div class="free-player-main"><span class="free-player-name">${escapeHtml(name)}</span><span class="free-player-total">${freeTotals[i]} pts</span></div><button type="button" class="free-add-btn" data-free-player="${i}">＋ Points</button></div>`;
+    }).join('');
+  }
 }
 
 addRoundBtn.addEventListener('click', () => {
@@ -394,12 +445,19 @@ scoreTable.addEventListener('click', e => {
 });
 
 function openScoreDialog() {
-  const { r, p } = activeCell;
-  const round = state.rounds[r];
-  dialogTitle.textContent = `${state.players[p]} · Manche ${r + 1}`;
-  const value = round.scores[p] ?? 0;
-  scoreValueButton.textContent = value;
-  manualScoreInput.value = value;
+  const { p } = activeCell;
+  if (activeCell.mode === 'free') {
+    dialogTitle.textContent = `${state.players[p]} · Ajouter des points`;
+    scoreValueButton.textContent = 0;
+    manualScoreInput.value = 0;
+  } else {
+    const { r } = activeCell;
+    const round = state.rounds[r];
+    dialogTitle.textContent = `${state.players[p]} · Manche ${r + 1}`;
+    const value = round.scores[p] ?? 0;
+    scoreValueButton.textContent = value;
+    manualScoreInput.value = value;
+  }
   manualEntry.classList.add('hidden');
   pauseTimer();
   scoreDialog.showModal();
@@ -412,9 +470,15 @@ function setPreviewValue(value) {
 function commitActiveScore() {
   if (!activeCell) return;
   pushHistory();
-  const round = state.rounds[activeCell.r];
-  round.scores[activeCell.p] = Math.trunc(Number(manualScoreInput.value !== '' ? manualScoreInput.value : scoreValueButton.textContent) || 0);
-  updateRoundCompletion(activeCell.r);
+  const value = Math.trunc(Number(manualScoreInput.value !== '' ? manualScoreInput.value : scoreValueButton.textContent) || 0);
+  if (activeCell.mode === 'free') {
+    state.freeTotals[activeCell.p] = (Number(state.freeTotals[activeCell.p]) || 0) + value;
+    state.freeActions.push({ playerIndex: activeCell.p, value, elapsedSec: getElapsedSeconds(), at: Date.now() });
+  } else {
+    const round = state.rounds[activeCell.r];
+    round.scores[activeCell.p] = value;
+    updateRoundCompletion(activeCell.r);
+  }
   saveState();
   renderGame();
 }
@@ -451,6 +515,20 @@ scoreForm.addEventListener('submit', e => {
 });
 scoreDialog.addEventListener('close', () => { if (!state.finishedAt) resumeTimer(); });
 
+freeScorePanel.addEventListener('click', e => {
+  const btn = e.target.closest('[data-free-player]');
+  if (!btn) return;
+  activeCell = { mode: 'free', p: Number(btn.dataset.freePlayer) };
+  openScoreDialog();
+});
+
+roundModeToggle.addEventListener('change', () => {
+  pushHistory();
+  state.scoringMode = roundModeToggle.checked ? 'rounds' : 'free';
+  saveState();
+  renderGame();
+});
+
 undoBtn.addEventListener('click', () => {
   const previous = state.history.pop();
   if (!previous) return;
@@ -460,15 +538,20 @@ undoBtn.addEventListener('click', () => {
   state.pausedAt = previous.pausedAt || null;
   state.pausedTotalMs = previous.pausedTotalMs || 0;
   state.playerColors = previous.playerColors || state.playerColors;
+  state.scoringMode = previous.scoringMode || state.scoringMode;
+  state.freeTotals = previous.freeTotals || state.freeTotals;
+  state.freeActions = previous.freeActions || state.freeActions;
   saveState();
   renderGame();
   syncTimer();
 });
 
 resetBtn.addEventListener('click', () => {
-  if (!confirm('Réinitialiser les scores et le temps de cette partie ?')) return;
-  pushHistory();
+  if (!confirm('Lancer une nouvelle partie avec les mêmes joueurs ?')) return;
   state.rounds = [createRound(state.players.length)];
+  state.freeTotals = Array(state.players.length).fill(0);
+  state.freeActions = [];
+  state.history = [];
   state.startedAt = Date.now();
   state.finishedAt = null;
   state.paused = false;
@@ -507,6 +590,7 @@ function openFinishDialog() {
 
   finishRounds.innerHTML = '';
   state.rounds.forEach((round, index) => {
+    if (!round.scores.some(score => score !== null && score !== undefined && score !== '')) return;
     const scoresText = round.scores.map((score, playerIdx) => `${state.players[playerIdx]}: ${score ?? '—'}`).join(' · ');
     const row = document.createElement('div');
     row.className = 'finish-item';
@@ -514,8 +598,23 @@ function openFinishDialog() {
     finishRounds.appendChild(row);
   });
 
+  if (state.freeActions.length) {
+    const title = document.createElement('div');
+    title.className = 'finish-item';
+    title.innerHTML = `<div><strong>Ajouts libres</strong><small>${state.freeActions.length} modification(s)</small></div><strong>Mode libre</strong>`;
+    finishRounds.appendChild(title);
+    state.freeActions.forEach(action => {
+      const row = document.createElement('div');
+      row.className = 'finish-item';
+      row.innerHTML = `<div><strong>${escapeHtml(state.players[action.playerIndex])}</strong><small>${formatDuration(action.elapsedSec)}</small></div><strong>${action.value >= 0 ? '+' : ''}${action.value} pts</strong>`;
+      finishRounds.appendChild(row);
+    });
+  }
+
   detailsPanel.classList.add('hidden');
   toggleDetailsBtn.textContent = 'Voir les détails de la partie';
+  saveStatsStatus.classList.add('hidden');
+  saveStatsBtn.textContent = 'Sauvegarder les statistiques';
   finishDialog.showModal();
 }
 
@@ -537,6 +636,36 @@ finishGameBtn.addEventListener('click', () => {
   openFinishDialog();
 });
 
+function buildStatsRecord() {
+  return {
+    id: `game-${Date.now()}`,
+    savedAt: new Date().toISOString(),
+    gameName: state.gameName,
+    winnerMode: state.winnerMode,
+    players: state.players.map((name, i) => ({ name, color: state.playerColors[i], total: totals()[i] })),
+    totalDurationSec: getElapsedSeconds(),
+    scoringMode: state.scoringMode,
+    rounds: state.rounds.map((round, index) => ({
+      number: index + 1,
+      scores: [...round.scores],
+      durationSec: round.durationSec
+    })),
+    freeActions: deepClone(state.freeActions)
+  };
+}
+
+saveStatsBtn.addEventListener('click', () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STATS_KEY) || '[]');
+    saved.push(buildStatsRecord());
+    localStorage.setItem(STATS_KEY, JSON.stringify(saved.slice(-100)));
+    saveStatsBtn.textContent = 'Statistiques sauvegardées ✓';
+    saveStatsStatus.classList.remove('hidden');
+  } catch (_) {
+    alert('Impossible de sauvegarder les statistiques sur cet appareil.');
+  }
+});
+
 closeFinishDialogBtn.addEventListener('click', () => finishDialog.close());
 toggleDetailsBtn.addEventListener('click', () => {
   detailsPanel.classList.toggle('hidden');
@@ -551,8 +680,9 @@ finishDialog.addEventListener('click', e => {
 function resetToSetup() {
   localStorage.removeItem(STORAGE_KEY);
   state = defaultState();
-  setupPlayers = ['Joueur 1', 'Joueur 2'];
+  setupPlayers = ['', ''];
   setupColors = DEFAULT_PLAYER_COLORS.slice(0, 2);
+  setupFirstPlayerIndex = 0;
   gameNameInput.value = '';
   document.querySelector('input[name="winnerMode"][value="high"]').checked = true;
   renderSetupPlayers();

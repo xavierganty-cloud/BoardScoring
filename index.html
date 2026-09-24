@@ -21,7 +21,7 @@
         <p class="hero-subtitle">Un compteur de points pratique<br>pour tous vos jeux</p>
         <button class="primary-btn hero-btn" id="launchSetupBtn">Lancer une partie</button>
       </div>
-      <p class="version-note version-note-bottom">Version 18 - by Xa!</p>
+      <p class="version-note version-note-bottom">Version 19 - by Xa!</p>
     </section>
 
     <section class="setup-screen hidden" id="setupScreen">
@@ -70,12 +70,19 @@
           <h2 id="gameTitle">Partie</h2>
           <div class="summary-meta">
             <span class="meta-chip">⏱ <strong id="liveTimer">00:00:00</strong></span>
-            <span class="meta-chip">🎲 <strong id="roundCount">1 manche</strong></span>
+            <span class="meta-chip">🎲 <strong id="roundCount">Manche 1 en cours</strong></span>
+          </div>
+          <div class="mode-toggle-row">
+            <span>Mode manches</span>
+            <label class="switch" aria-label="Activer ou désactiver le mode manches">
+              <input id="roundModeToggle" type="checkbox" checked />
+              <span class="switch-slider"></span>
+            </label>
           </div>
         </div>
         <div class="summary-actions compact-actions">
           <button class="small-btn" id="undoBtn" disabled>↶ Annuler</button>
-          <button class="small-btn danger-text" id="resetBtn">Réinitialiser</button>
+          <button class="small-btn danger-text" id="resetBtn">Nouvelle partie</button>
         </div>
       </section>
 
@@ -84,6 +91,8 @@
           <table class="score-table" id="scoreTable"></table>
         </div>
       </section>
+
+      <section id="freeScorePanel" class="free-score-panel hidden"></section>
 
       <div class="action-stack">
         <button class="primary-btn" id="addRoundBtn">Manche suivante</button>
@@ -150,6 +159,8 @@
       </div>
 
       <button type="button" class="secondary-btn secondary-strong" id="toggleDetailsBtn">Voir les détails de la partie</button>
+      <button type="button" class="primary-btn save-stats-btn" id="saveStatsBtn">Sauvegarder les statistiques</button>
+      <p id="saveStatsStatus" class="save-stats-status hidden">Statistiques sauvegardées sur cet appareil.</p>
 
       <div id="detailsPanel" class="details-panel hidden">
         <div class="finish-block finish-block-tight">

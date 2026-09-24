@@ -1,15 +1,12 @@
-# BoardScoring v18
+# BoardScoring v19
 
-## Correction icône iPhone
-- l'icône iPhone a été entièrement refaite à partir du **meeple + dé uniquement**
-- suppression du recadrage horizontal qui donnait un effet **étiré vers le haut**
-- nouvelles icônes carrées `icon-192.png`, `icon-512.png` et `apple-touch-icon.png`
-- version affichée : **Version 18 - by Xa!**
-
-## Important sur iPhone
-Après mise à jour, il faut :
-1. supprimer l'ancienne icône BoardScoring de l'écran d'accueil ;
-2. ouvrir le site dans Safari ;
-3. l'ajouter à nouveau à l'écran d'accueil.
-
-Sinon iOS continue souvent d'utiliser l'ancienne icône en cache.
+## Nouveautés
+- les champs **Joueur 1, Joueur 2…** sont maintenant des placeholders : ils disparaissent dès la saisie
+- choix du **premier joueur** dans l’écran de création ; l’ordre d’affichage commence ensuite par ce joueur
+- le bouton **Réinitialiser** devient **Nouvelle partie** et relance une partie avec les mêmes joueurs
+- confirmation : **« Lancer une nouvelle partie avec les mêmes joueurs ? »**
+- l’indicateur affiche désormais **Manche 1 en cours**
+- possibilité de désactiver le système de manches pendant la partie et de passer en **mode libre**
+- en mode libre, chaque joueur dispose de son propre bouton **+ Points**
+- ajout d’un bouton **Sauvegarder les statistiques** sur l’écran de fin de partie
+- version affichée : **Version 19 - by Xa!**
