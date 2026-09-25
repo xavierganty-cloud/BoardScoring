@@ -20,8 +20,26 @@
         <img src="logo-home.png" alt="BoardScoring" class="welcome-logo" />
         <p class="hero-subtitle">Un compteur de points pratique<br>pour tous vos jeux</p>
         <button class="primary-btn hero-btn" id="launchSetupBtn">Lancer une partie</button>
+        <button class="secondary-btn history-home-btn" id="openHistoryBtn">Parties sauvegardées</button>
       </div>
-      <p class="version-note version-note-bottom">Version 19 - by Xa!</p>
+      <p class="version-note version-note-bottom">Version 20 - by Xa!</p>
+    </section>
+
+    <section class="history-screen hidden" id="historyScreen">
+      <header class="topbar topbar-setup">
+        <div class="brand brand-horizontal"><div class="brand-logo-wrap"><img src="logo-horizontal.png" alt="BoardScoring" class="header-logo" /></div></div>
+        <button class="icon-btn" id="backHistoryHomeBtn" aria-label="Retour accueil" title="Retour accueil">←</button>
+      </header>
+      <section class="history-card card">
+        <div class="history-header">
+          <div>
+            <div class="eyebrow">Historique</div>
+            <h2>Parties sauvegardées</h2>
+          </div>
+          <button type="button" class="small-btn danger-text" id="clearHistoryBtn">Tout effacer</button>
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </section>
     </section>
 
     <section class="setup-screen hidden" id="setupScreen">
@@ -61,7 +79,7 @@
     <section id="gamePanel" class="game-panel hidden">
       <header class="topbar">
         <div class="brand brand-horizontal"><div class="brand-logo-wrap"><img src="logo-horizontal.png" alt="BoardScoring" class="header-logo" /></div></div>
-        <button class="small-btn top-new-game-btn" id="newGameBtn" aria-label="Nouvelle partie" title="Nouvelle partie">Nouvelle partie</button>
+        <button class="small-btn top-new-game-btn" id="newGameBtn" aria-label="Retour à l’accueil" title="Retour à l’accueil">Accueil</button>
       </header>
 
       <section class="summary card">

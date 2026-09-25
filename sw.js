@@ -1,4 +1,4 @@
-const CACHE = 'boardscoring-v19';
+const CACHE = 'boardscoring-v20';
 const ASSETS = ['./', 'index.html', 'styles.css', 'app.js', 'manifest.webmanifest', 'logo-home.png', 'logo-horizontal.png', 'logo-transparent.png', 'icon-192.png', 'icon-512.png', 'apple-touch-icon.png'];
 
 self.addEventListener('install', event => {

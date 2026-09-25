@@ -811,3 +811,28 @@ body {
   font-weight:800;
   letter-spacing:.02em;
 }
+
+
+/* V20 history and free-score trace */
+.history-home-btn { max-width: 320px; margin: 10px auto 0; }
+.history-screen { width:100%; }
+.history-card { padding:20px; }
+.history-header { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:16px; }
+.history-list { display:grid; gap:12px; }
+.history-empty { padding:22px 16px; text-align:center; color:var(--muted); background:#161b21; border:1px solid rgba(255,255,255,.09); border-radius:16px; }
+.history-item { padding:15px; border-radius:18px; background:linear-gradient(180deg,#20262e,#171c22); border:1px solid rgba(255,255,255,.1); }
+.history-item-top { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+.history-item-top strong { display:block; font-size:1.05rem; }
+.history-item-top small { display:block; margin-top:3px; color:var(--muted); }
+.history-duration { color:#fff; font-weight:850; white-space:nowrap; }
+.history-summary { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; color:#c9c1bb; font-size:.8rem; }
+.history-summary span { padding:5px 8px; border-radius:999px; background:rgba(255,255,255,.05); }
+.history-detail-btn { width:100%; margin-top:12px; padding:10px 12px; border:1px solid rgba(255,255,255,.1); border-radius:12px; background:#11161b; color:#fff; font-weight:750; cursor:pointer; }
+.history-detail { margin-top:10px; display:grid; gap:6px; }
+.history-score-row { display:flex; justify-content:space-between; gap:12px; padding:8px 10px; border-radius:10px; background:rgba(255,255,255,.04); }
+.free-player-card { align-items:start; }
+.free-history { display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+.free-history-chip { padding:4px 7px; border-radius:999px; background:rgba(53,161,103,.14); color:#bde7ca; font-size:.74rem; font-weight:800; border:1px solid rgba(53,161,103,.2); }
+.free-history-chip.negative { background:rgba(215,74,66,.14); color:#ffc4c0; border-color:rgba(215,74,66,.22); }
+.free-history.empty { color:#8f8883; font-size:.72rem; }
+@media (max-width:520px){ .history-header{align-items:center}.history-header .small-btn{font-size:.75rem;padding:8px 9px}.free-player-card{grid-template-columns:auto minmax(0,1fr) auto} }

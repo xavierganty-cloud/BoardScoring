@@ -1,12 +1,11 @@
-# BoardScoring v19
+# BoardScoring v20
 
 ## Nouveautés
-- les champs **Joueur 1, Joueur 2…** sont maintenant des placeholders : ils disparaissent dès la saisie
-- choix du **premier joueur** dans l’écran de création ; l’ordre d’affichage commence ensuite par ce joueur
-- le bouton **Réinitialiser** devient **Nouvelle partie** et relance une partie avec les mêmes joueurs
-- confirmation : **« Lancer une nouvelle partie avec les mêmes joueurs ? »**
-- l’indicateur affiche désormais **Manche 1 en cours**
-- possibilité de désactiver le système de manches pendant la partie et de passer en **mode libre**
-- en mode libre, chaque joueur dispose de son propre bouton **+ Points**
-- ajout d’un bouton **Sauvegarder les statistiques** sur l’écran de fin de partie
-- version affichée : **Version 19 - by Xa!**
+- en mode sans manches, chaque ajout de points reste visible sous le joueur sous forme d'historique (+5, -2, +10, etc.)
+- le bouton en haut pendant une partie devient **Accueil** et renvoie vers l'écran d'accueil sans effacer automatiquement la partie en cours
+- ajout d'un bouton **Parties sauvegardées** sur l'écran d'accueil
+- nouvel écran d'historique pour consulter les parties sauvegardées, leur durée, le gagnant et les scores
+- possibilité d'effacer tout l'historique sauvegardé
+- version affichée : **Version 20 - by Xa!**
+
+Les parties sauvegardées sont stockées localement dans le navigateur de l'appareil.

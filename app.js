@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'boardscoring-state-v19';
+const STORAGE_KEY = 'boardscoring-state-v20';
 const STATS_KEY = 'boardscoring-saved-stats-v1';
 const DEFAULT_PLAYER_COLORS = [
   '#d74a42', '#3f7cff', '#35a167', '#f2a72f', '#9a5cff', '#ec6da6',
@@ -7,8 +7,13 @@ const DEFAULT_PLAYER_COLORS = [
 
 const welcomeScreen = document.getElementById('welcomeScreen');
 const setupScreen = document.getElementById('setupScreen');
+const historyScreen = document.getElementById('historyScreen');
 const gamePanel = document.getElementById('gamePanel');
 const launchSetupBtn = document.getElementById('launchSetupBtn');
+const openHistoryBtn = document.getElementById('openHistoryBtn');
+const backHistoryHomeBtn = document.getElementById('backHistoryHomeBtn');
+const historyList = document.getElementById('historyList');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
 const backHomeBtn = document.getElementById('backHomeBtn');
 const playersSetup = document.getElementById('playersSetup');
 const playerCount = document.getElementById('playerCount');
@@ -92,15 +97,25 @@ function saveState() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 function showWelcome() {
   welcomeScreen.classList.remove('hidden');
   setupScreen.classList.add('hidden');
+  historyScreen.classList.add('hidden');
   gamePanel.classList.add('hidden');
 }
 function showSetup() {
   welcomeScreen.classList.add('hidden');
+  historyScreen.classList.add('hidden');
   setupScreen.classList.remove('hidden');
   gamePanel.classList.add('hidden');
 }
+function showHistory() {
+  welcomeScreen.classList.add('hidden');
+  setupScreen.classList.add('hidden');
+  gamePanel.classList.add('hidden');
+  historyScreen.classList.remove('hidden');
+  renderHistory();
+}
 function showGame() {
   welcomeScreen.classList.add('hidden');
+  historyScreen.classList.add('hidden');
   setupScreen.classList.add('hidden');
   gamePanel.classList.remove('hidden');
   if (gameSubtitle) gameSubtitle.textContent = state.gameName;
@@ -228,6 +243,8 @@ addPlayerBtn.addEventListener('click', () => {
 });
 
 launchSetupBtn.addEventListener('click', showSetup);
+openHistoryBtn.addEventListener('click', showHistory);
+backHistoryHomeBtn.addEventListener('click', showWelcome);
 backHomeBtn.addEventListener('click', showWelcome);
 
 startGameBtn.addEventListener('click', () => {
@@ -414,7 +431,11 @@ function renderGame() {
     freeScorePanel.innerHTML = state.players.map((name, i) => {
       const color = state.playerColors[i] || DEFAULT_PLAYER_COLORS[i % DEFAULT_PLAYER_COLORS.length];
       const readable = readableAccent(color);
-      return `<div class="free-player-card" style="--player-color:${color};--player-readable:${readable}"><span class="free-player-dot"></span><div class="free-player-main"><span class="free-player-name">${escapeHtml(name)}</span><span class="free-player-total">${freeTotals[i]} pts</span></div><button type="button" class="free-add-btn" data-free-player="${i}">＋ Points</button></div>`;
+      const actions = state.freeActions.filter(action => action.playerIndex === i);
+      const history = actions.length
+        ? `<div class="free-history">${actions.map(action => `<span class="free-history-chip ${action.value < 0 ? 'negative' : ''}">${action.value >= 0 ? '+' : ''}${action.value}</span>`).join('')}</div>`
+        : '<div class="free-history empty">Aucun point ajouté</div>';
+      return `<div class="free-player-card" style="--player-color:${color};--player-readable:${readable}"><span class="free-player-dot"></span><div class="free-player-main"><span class="free-player-name">${escapeHtml(name)}</span><span class="free-player-total">${freeTotals[i]} pts</span>${history}</div><button type="button" class="free-add-btn" data-free-player="${i}">＋ Points</button></div>`;
     }).join('');
   }
 }
@@ -690,8 +711,60 @@ function resetToSetup() {
   showSetup();
 }
 newGameBtn.addEventListener('click', () => {
-  if (state.started && !confirm('Créer une nouvelle partie ? La partie actuelle sera remplacée.')) return;
-  resetToSetup();
+  if (state.started && !state.finishedAt && !confirm('Retourner à l’accueil ? La partie en cours restera sauvegardée sur cet appareil.')) return;
+  showWelcome();
+});
+
+function getSavedStats() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STATS_KEY) || '[]');
+    return Array.isArray(saved) ? saved : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function formatSavedDate(iso) {
+  try {
+    return new Intl.DateTimeFormat('fr-BE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(iso));
+  } catch (_) {
+    return '';
+  }
+}
+
+function renderHistory() {
+  const saved = getSavedStats().slice().reverse();
+  if (!saved.length) {
+    historyList.innerHTML = '<div class="history-empty">Aucune partie sauvegardée pour le moment.</div>';
+    clearHistoryBtn.disabled = true;
+    return;
+  }
+  clearHistoryBtn.disabled = false;
+  historyList.innerHTML = saved.map((game, index) => {
+    const sorted = (game.players || []).slice().sort((a,b) => game.winnerMode === 'low' ? a.total - b.total : b.total - a.total);
+    const winner = sorted[0];
+    const details = (game.rounds || []).filter(round => Array.isArray(round.scores) && round.scores.some(v => v !== null && v !== undefined)).length;
+    return `<article class="history-item">
+      <div class="history-item-top"><div><strong>${escapeHtml(game.gameName || 'Partie')}</strong><small>${formatSavedDate(game.savedAt)}</small></div><span class="history-duration">${formatDuration(game.totalDurationSec || 0)}</span></div>
+      <div class="history-summary"><span>${game.players?.length || 0} joueur(s)</span><span>${details} manche(s)</span>${winner ? `<span>Gagnant : <b>${escapeHtml(winner.name)}</b></span>` : ''}</div>
+      <button type="button" class="history-detail-btn" data-history-id="${game.id}">Voir le détail</button>
+      <div class="history-detail hidden" id="history-${game.id}">${(game.players || []).map(player => `<div class="history-score-row"><span>${escapeHtml(player.name)}</span><strong>${player.total} pts</strong></div>`).join('')}</div>
+    </article>`;
+  }).join('');
+}
+
+historyList.addEventListener('click', e => {
+  const btn = e.target.closest('[data-history-id]');
+  if (!btn) return;
+  const panel = document.getElementById(`history-${btn.dataset.historyId}`);
+  panel.classList.toggle('hidden');
+  btn.textContent = panel.classList.contains('hidden') ? 'Voir le détail' : 'Masquer le détail';
+});
+
+clearHistoryBtn.addEventListener('click', () => {
+  if (!confirm('Effacer toutes les parties sauvegardées ?')) return;
+  localStorage.removeItem(STATS_KEY);
+  renderHistory();
 });
 
 if ('serviceWorker' in navigator) {
